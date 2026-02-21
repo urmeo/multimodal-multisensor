@@ -1,0 +1,17 @@
+cff-version: 1.2.0
+message: "If you use this research or data, please cite it as below."
+type: dataset
+title: "Multimodal-Multisensor: Longitudinal Neurophysiological Analysis with Eye-Tracking, HRV, and Psychometric Data"
+authors:
+  - given-names: urme
+version: 1.0.0
+date-released: 2025-03-02
+url: "https://github.com/urmeo/multimodal-multisensor"
+keywords:
+  - neurophysiology
+  - eye-tracking
+  - heart-rate-variability
+  - psychometric-testing
+  - multimodal-analysis
+  - computational-neuropsychology
+license: MIT

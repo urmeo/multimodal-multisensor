@@ -1,0 +1,31 @@
+# OS files
+.DS_Store
+.DS_Store?
+Thumbs.db
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+*.egg
+
+# IDE
+.vscode/
+.idea/
+
+# Environment
+.env
+venv/
+env/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+# Original HEIC files (converted to JPG)
+*.HEIC
