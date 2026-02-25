@@ -29,3 +29,5 @@ env/
 htmlcov/
 # Original HEIC files (converted to JPG)
 *.HEIC
+
+.removed/
