@@ -31,11 +31,11 @@ Longitudinal study where 10 adults completed standardized psychology tests acros
 
 ## Experimental setup
 
-![Human Performance Monitoring dashboard — Thales](images/Thales Human Performance Monitoring for Data Collection.png)
+![Human Performance Monitoring dashboard — Thales](images/Thales%20Human%20Performance%20Monitoring%20for%20Data%20Collection.png)
 
 | Hardware and sensors | Eye-tracker pupil detection |
 |:---:|:---:|
-| ![Hardware setup](images/experimental_setup.jpg) | ![Eye-tracking calibration](images/Eye-Tracking calibration.png) |
+| ![Hardware setup](images/experimental_setup.jpg) | ![Eye-tracking calibration](images/Eye-Tracking%20calibration.png) |
 
 | Participant in session | Session in progress |
 |:---:|:---:|
@@ -57,9 +57,9 @@ There's high variability between people (everyone responds quite differently dur
 
 ## Results
 
-![Standard deviation of HRV, pupil dilation, and test duration across all participants](images/Standard Deviation of HRV (SDNN).png)
+![Standard deviation of HRV, pupil dilation, and test duration across all participants](images/Standard%20Deviation%20of%20HRV%20%28SDNN%29.png)
 
-![Standard deviation of pupil dilation per participant across three sessions](images/Standard Deviation of Pupil Dilation.png)
+![Standard deviation of pupil dilation per participant across three sessions](images/Standard%20Deviation%20of%20Pupil%20Dilation.png)
 
 ![Total test duration per participant per session](images/Group Duration.png)
 
