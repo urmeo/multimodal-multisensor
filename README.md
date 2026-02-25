@@ -18,9 +18,7 @@ Longitudinal study where 10 adults completed standardized psychology tests acros
 - **BFI-10** — Big Five Inventory (10-item short form)
 - **Fear Questionnaire** — Marks-Mathews phobia assessment
 
-<p align="center">
-  <img src="images/scoring-results.png" width="45%" />
-</p>
+![Sample psychometric test results](images/scoring-results.png)
 
 ## Sensors used
 
@@ -33,19 +31,15 @@ Longitudinal study where 10 adults completed standardized psychology tests acros
 
 ## Experimental setup
 
-<p align="center">
-  <img src="images/Thales Human Performance Monitoring for Data Collection.png" width="85%" />
-</p>
-<p align="center">
-  <img src="images/experimental_setup.jpg" width="36%" />
-  &nbsp;&nbsp;
-  <img src="images/Eye-Tracking calibration.png" width="56%" />
-</p>
-<p align="center">
-  <img src="images/data_collection_session.jpg" width="48%" />
-  &nbsp;
-  <img src="images/participant_testing.jpg" width="48%" />
-</p>
+![Human Performance Monitoring dashboard — Thales](images/Thales Human Performance Monitoring for Data Collection.png)
+
+| Hardware and sensors | Eye-tracker pupil detection |
+|:---:|:---:|
+| ![Hardware setup](images/experimental_setup.jpg) | ![Eye-tracking calibration](images/Eye-Tracking calibration.png) |
+
+| Participant in session | Session in progress |
+|:---:|:---:|
+| ![Data collection session](images/data_collection_session.jpg) | ![Participant testing](images/participant_testing.jpg) |
 
 ## How it was done
 
@@ -59,26 +53,19 @@ Longitudinal study where 10 adults completed standardized psychology tests acros
 
 There's high variability between people (everyone responds quite differently during testing) but low variability within each person across sessions (each individual's physiological pattern stays pretty consistent). This suggests these responses reflect stable individual traits rather than just random fluctuation.
 
-<p align="center">
-  <img src="images/correlation_heatmap_with_values_final.png" width="70%" />
-</p>
+![Correlation matrix of HRV SDNN and Pupil Dilation STD across sessions](images/correlation_heatmap_with_values_final.png)
 
 ## Results
 
-<p align="center">
-  <img src="images/Standard Deviation of HRV (SDNN).png" width="85%" />
-</p>
-<p align="center">
-  <img src="images/Standard Deviation of Pupil Dilation.png" width="70%" />
-</p>
-<p align="center">
-  <img src="images/Group Duration.png" width="85%" />
-</p>
-<p align="center">
-  <img src="images/pca_kmeans_clusters.png" width="52%" />
-  &nbsp;
-  <img src="images/silhouette_score.png" width="44%" />
-</p>
+![Standard deviation of HRV, pupil dilation, and test duration across all participants](images/Standard Deviation of HRV (SDNN).png)
+
+![Standard deviation of pupil dilation per participant across three sessions](images/Standard Deviation of Pupil Dilation.png)
+
+![Total test duration per participant per session](images/Group Duration.png)
+
+| K-Means clusters in PCA space | Optimal cluster selection |
+|:---:|:---:|
+| ![PCA K-Means clusters](images/pca_kmeans_clusters.png) | ![Silhouette score vs number of clusters](images/silhouette_score.png) |
 
 ## Tech Stack
 
