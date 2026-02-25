@@ -1,7 +1,5 @@
 # Multimodal-Multisensor
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-
 Longitudinal study where 10 adults completed standardized psychology tests across three weekly sessions while wearing multiple biometric sensors. Combines self-report psychometric data with real-time physiological recordings.
 
 ## Study design
@@ -32,17 +30,17 @@ Longitudinal study where 10 adults completed standardized psychology tests acros
 ## Experimental setup
 
 <p align="center">
-  <img src="images/Thales Human Performance Monitoring for Data Collection.png" width="70%" />
+  <img src="images/Thales Human Performance Monitoring for Data Collection.png" width="80%" />
 </p>
 <p align="center">
-  <img src="images/experimental_setup.jpg" width="50%" />
+  <img src="images/Eye-Tracking calibration.png" width="48%" />
+  &nbsp;
+  <img src="images/experimental_setup.jpg" width="48%" />
 </p>
 <p align="center">
-  <img src="images/Eye-Tracking calibration.png" width="45%" />
-  <img src="images/data_collection_session.jpg" width="45%" />
-</p>
-<p align="center">
-  <img src="images/participant_testing.jpg" width="45%" />
+  <img src="images/data_collection_session.jpg" width="48%" />
+  &nbsp;
+  <img src="images/participant_testing.jpg" width="48%" />
 </p>
 
 ## How it was done
@@ -64,18 +62,20 @@ There's high variability between people (everyone responds quite differently dur
 ## Results
 
 <p align="center">
-  <img src="images/scoring-results.png" width="60%" />
+  <img src="images/scoring-results.png" width="65%" />
 </p>
 <p align="center">
-  <img src="images/Standard Deviation of HRV (SDNN).png" width="45%" />
-  <img src="images/Standard Deviation of Pupil Dilation.png" width="45%" />
+  <img src="images/Standard Deviation of HRV (SDNN).png" width="48%" />
+  &nbsp;
+  <img src="images/Standard Deviation of Pupil Dilation.png" width="48%" />
 </p>
 <p align="center">
-  <img src="images/Group Duration.png" width="55%" />
+  <img src="images/Group Duration.png" width="65%" />
 </p>
 <p align="center">
-  <img src="images/pca_kmeans_clusters.png" width="45%" />
-  <img src="images/silhouette_score.png" width="45%" />
+  <img src="images/pca_kmeans_clusters.png" width="48%" />
+  &nbsp;
+  <img src="images/silhouette_score.png" width="48%" />
 </p>
 
 ## Tech Stack
@@ -88,30 +88,10 @@ IoT · Machine Learning · Multimodal · Neurophysiological · Multi-Sensors · 
 
 ## Related repos
 
-- [Multimodal](https://github.com/urme-b/Multimodal) — Group-level analysis of HRV, pupil dilation, and behavioral timing
-- [CalmSense](https://github.com/urmeo/calm-sense) — ML/DL stress detection from physiological signals
 - [Sensor](https://github.com/urmeo/sensor) — Review of the biometric sensors used here
 - [Psychometric](https://github.com/urmeo/psychometric) — Web app for the psychometric tests used in this study
-
-## Citation
-
-If you use this data or methodology, please cite:
-
-```
-Bose, U. (2025). Multimodal-Multisensor: Longitudinal Biometric Study
-of Psychometric Assessment. GitHub. https://github.com/urmeo/multimodal-multisensor
-```
-
-```bibtex
-@misc{bose2025multimodal,
-  author       = {Bose, Urme},
-  title        = {Multimodal-Multisensor: Longitudinal Biometric Study of Psychometric Assessment},
-  year         = {2025},
-  url          = {https://github.com/urmeo/multimodal-multisensor},
-  note         = {Longitudinal multi-sensor study combining psychometric self-report with physiological recordings}
-}
-```
+- [CalmSense](https://github.com/urmeo/calm-sense) — ML/DL stress detection from physiological signals
 
 ## License
 
-MIT License. See [LICENSE](LICENSE) for details.
+[MIT](LICENSE)
