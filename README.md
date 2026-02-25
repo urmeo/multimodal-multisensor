@@ -61,7 +61,6 @@ There's high variability between people (everyone responds quite differently dur
 |:---:|:---:|
 | ![HRV SDNN across participants](images/Standard%20Deviation%20of%20HRV%20%28SDNN%29.png) | ![Pupil dilation SD across participants](images/Standard%20Deviation%20of%20Pupil%20Dilation.png) |
 
-![Total test duration per participant per session](images/Group%20Duration.png)
 
 | K-Means clusters in PCA space | Optimal cluster selection |
 |:---:|:---:|
