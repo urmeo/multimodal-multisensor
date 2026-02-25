@@ -57,11 +57,11 @@ There's high variability between people (everyone responds quite differently dur
 
 ## Results
 
-![Standard deviation of HRV, pupil dilation, and test duration across all participants](images/Standard%20Deviation%20of%20HRV%20%28SDNN%29.png)
+| Standard deviation of HRV (SDNN) | Standard deviation of pupil dilation |
+|:---:|:---:|
+| ![HRV SDNN across participants](images/Standard%20Deviation%20of%20HRV%20%28SDNN%29.png) | ![Pupil dilation SD across participants](images/Standard%20Deviation%20of%20Pupil%20Dilation.png) |
 
-![Standard deviation of pupil dilation per participant across three sessions](images/Standard%20Deviation%20of%20Pupil%20Dilation.png)
-
-![Total test duration per participant per session](images/Group Duration.png)
+![Total test duration per participant per session](images/Group%20Duration.png)
 
 | K-Means clusters in PCA space | Optimal cluster selection |
 |:---:|:---:|
