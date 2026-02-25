@@ -18,6 +18,10 @@ Longitudinal study where 10 adults completed standardized psychology tests acros
 - **BFI-10** — Big Five Inventory (10-item short form)
 - **Fear Questionnaire** — Marks-Mathews phobia assessment
 
+<p align="center">
+  <img src="images/scoring-results.png" width="45%" />
+</p>
+
 ## Sensors used
 
 | Modality | Sensor | What it measures |
@@ -30,12 +34,12 @@ Longitudinal study where 10 adults completed standardized psychology tests acros
 ## Experimental setup
 
 <p align="center">
-  <img src="images/Thales Human Performance Monitoring for Data Collection.png" width="80%" />
+  <img src="images/Thales Human Performance Monitoring for Data Collection.png" width="85%" />
 </p>
 <p align="center">
-  <img src="images/Eye-Tracking calibration.png" width="48%" />
-  &nbsp;
-  <img src="images/experimental_setup.jpg" width="48%" />
+  <img src="images/experimental_setup.jpg" width="36%" />
+  &nbsp;&nbsp;
+  <img src="images/Eye-Tracking calibration.png" width="56%" />
 </p>
 <p align="center">
   <img src="images/data_collection_session.jpg" width="48%" />
@@ -56,26 +60,24 @@ Longitudinal study where 10 adults completed standardized psychology tests acros
 There's high variability between people (everyone responds quite differently during testing) but low variability within each person across sessions (each individual's physiological pattern stays pretty consistent). This suggests these responses reflect stable individual traits rather than just random fluctuation.
 
 <p align="center">
-  <img src="images/correlation_heatmap_with_values_final.png" width="60%" />
+  <img src="images/correlation_heatmap_with_values_final.png" width="70%" />
 </p>
 
 ## Results
 
 <p align="center">
-  <img src="images/scoring-results.png" width="65%" />
+  <img src="images/Standard Deviation of HRV (SDNN).png" width="85%" />
 </p>
 <p align="center">
-  <img src="images/Standard Deviation of HRV (SDNN).png" width="48%" />
+  <img src="images/Standard Deviation of Pupil Dilation.png" width="70%" />
+</p>
+<p align="center">
+  <img src="images/Group Duration.png" width="85%" />
+</p>
+<p align="center">
+  <img src="images/pca_kmeans_clusters.png" width="52%" />
   &nbsp;
-  <img src="images/Standard Deviation of Pupil Dilation.png" width="48%" />
-</p>
-<p align="center">
-  <img src="images/Group Duration.png" width="65%" />
-</p>
-<p align="center">
-  <img src="images/pca_kmeans_clusters.png" width="48%" />
-  &nbsp;
-  <img src="images/silhouette_score.png" width="48%" />
+  <img src="images/silhouette_score.png" width="44%" />
 </p>
 
 ## Tech Stack
