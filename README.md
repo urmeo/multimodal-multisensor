@@ -33,9 +33,9 @@ Longitudinal study where 10 adults completed standardized psychology tests acros
 
 ![Human Performance Monitoring dashboard — Thales](images/Thales%20Human%20Performance%20Monitoring%20for%20Data%20Collection.png)
 
-| Hardware and sensors | Eye-tracker pupil detection |
+| Hardware and sensors | Setup |
 |:---:|:---:|
-| ![Hardware setup](images/experimental_setup.jpg) | ![Eye-tracking calibration](images/Eye-Tracking%20calibration.png) |
+| ![Hardware setup](images/experimental_setup.jpg) | ![Setup](images/setup_page_4.jpg) |
 
 | Participant in session | Session in progress |
 |:---:|:---:|
