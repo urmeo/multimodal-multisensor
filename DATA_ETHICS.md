@@ -49,4 +49,4 @@ educational purposes** only. Do not attempt to re-identify participants or use
 the data to make decisions about any individual.
 
 ## Contact
-Data controller / questions about this statement: urme — urme.bose1@gmail.com.
+Data controller / questions about this statement: urme ([@urmeo](https://github.com/urmeo)).
