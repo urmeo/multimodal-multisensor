@@ -74,7 +74,7 @@ The confidence intervals are the real story: for HRV the interval **crosses zero
 ## Reproduce this analysis
 
 ```bash
-git clone https://github.com/urme-b/Multimodal-Multisensor
+git clone https://github.com/urmeo/Multimodal-Multisensor
 cd Multimodal-Multisensor
 
 python -m venv .venv && source .venv/bin/activate   # Python >= 3.11
