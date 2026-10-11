@@ -13,7 +13,7 @@ import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-FOLDERS = ("case-study", "group", "individual")
+FOLDERS = ("notebooks/case-study", "notebooks/group", "notebooks/individual")
 
 
 def hashes(root: Path) -> dict[str, str]:
@@ -33,7 +33,7 @@ def main(argv: list[str] | None = None) -> int:
         shutil.copytree(ROOT / "data", scratch / "data")
         for folder in FOLDERS:
             destination = scratch / folder
-            destination.mkdir()
+            destination.mkdir(parents=True)
             for source in (ROOT / folder).glob("*.ipynb"):
                 shutil.copy2(source, destination / source.name)
         notebooks = sorted(

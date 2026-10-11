@@ -40,10 +40,12 @@ flowchart LR
 
 ## Verify
 
+Research notebooks: [case study](notebooks/case-study) · [group](notebooks/group) · [individual](notebooks/individual). Shared code is in `mms/`; commands are in `scripts/`.
+
 ```sh
 python -m pip install -e '.[dev]'
 python -m pytest tests -q
-python -m pipeline.build_group_summaries --check
+python -m scripts.build_group_summaries --check
 ```
 
 **Python 3.11/3.12** · [Notebook and hashed-install commands](CONTRIBUTING.md)
@@ -72,7 +74,7 @@ Sharing/photo consent recorded; residual dates/device labels remain. [Consent](D
 
 [Corrections](docs/REPORT_STATUS.md) · [Figures](docs/FIGURES.md) · [Data contract](DATA_PROVENANCE.md)
 
-[Sensor](https://github.com/urmeo/Sensor) · [Psychometric](https://github.com/urmeo/Psychometric) · [CalmSense](https://github.com/urmeo/CalmSense)
+[Sensor](https://github.com/urmeo/sensor) · [Psychometric](https://github.com/urmeo/psychometric) · [CalmSense](https://github.com/urmeo/calm-sense)
 
 **Keywords:** recordings · sessions · variability · uncertainty
 

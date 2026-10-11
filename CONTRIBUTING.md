@@ -1,6 +1,6 @@
 # Contributing
 
-- Install Python 3.11 or 3.12 with `python -m pip install -e '.[dev]'`. Run `python -m pytest tests -q` and `python -m pipeline.build_group_summaries --check`.
+- Install Python 3.11 or 3.12 with `python -m pip install -e '.[dev]'`. Run `python -m pytest tests -q` and `python -m scripts.build_group_summaries --check`.
 - Run notebooks with `python scripts/verify_notebooks.py`; it copies inputs to a temporary workspace and exports separately. Preserve observations and reports; use synthetic regression cases.
 - Describe the changed method, command and expected result. Keep units, clocks, [rights](NOTICE.md) and [consent](DATA_ETHICS.md) explicit.
 
