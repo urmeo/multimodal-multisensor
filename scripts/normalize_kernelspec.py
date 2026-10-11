@@ -19,7 +19,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     pending = []
     for folder in ("case-study", "individual", "group"):
-        for path in sorted((ROOT / folder).glob("*.ipynb")):
+        for path in sorted((ROOT / "notebooks" / folder).glob("*.ipynb")):
             notebook = nbformat.read(path, as_version=4)
             nbformat.validate(notebook)
             if notebook.metadata.get("kernelspec") != PORTABLE:

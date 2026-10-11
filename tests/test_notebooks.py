@@ -10,7 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 NOTEBOOKS = sorted(
     path
     for folder in ("case-study", "individual", "group")
-    for path in (ROOT / folder).glob("*.ipynb")
+    for path in (ROOT / "notebooks" / folder).glob("*.ipynb")
 )
 
 

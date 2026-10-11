@@ -40,10 +40,12 @@ flowchart LR
 
 ## Verify
 
+Research notebooks: [case study](notebooks/case-study) · [group](notebooks/group) · [individual](notebooks/individual). Shared code is in `mms/`; commands are in `scripts/`.
+
 ```sh
 python -m pip install -e '.[dev]'
 python -m pytest tests -q
-python -m pipeline.build_group_summaries --check
+python -m scripts.build_group_summaries --check
 ```
 
 **Python 3.11/3.12** · [Notebook and hashed-install commands](CONTRIBUTING.md)

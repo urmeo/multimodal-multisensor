@@ -14,7 +14,7 @@ import pandas as pd
 import pytest
 
 from mms import io, paths
-from pipeline import build_group_summaries as build
+from scripts import build_group_summaries as build
 from scripts import deidentify_timestamps as shift
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -216,7 +216,7 @@ def test_complex_summary_and_interval_values_are_rejected(dataset):
 def test_summary_check_metric_tolerances_and_no_writes(dataset, tmp_path):
     before = snapshot(dataset)
     result = command(
-        "pipeline.build_group_summaries", "--check", "--data-root", dataset
+        "scripts.build_group_summaries", "--check", "--data-root", dataset
     )
     assert result.returncode == 0, result.stderr
     assert "within tolerance" in result.stdout and snapshot(dataset) == before
@@ -227,7 +227,7 @@ def test_summary_check_metric_tolerances_and_no_writes(dataset, tmp_path):
     frame.to_csv(target, index=False)
     before = snapshot(dataset)
     result = command(
-        "pipeline.build_group_summaries", "--check", "--data-root", dataset
+        "scripts.build_group_summaries", "--check", "--data-root", dataset
     )
     assert result.returncode == 1 and "DRIFT" in result.stdout
     assert snapshot(dataset) == before
@@ -293,7 +293,7 @@ def test_summary_fractional_channels_fail_before_output(
 
 
 @pytest.mark.parametrize(
-    "module", ["pipeline.build_group_summaries", "scripts.deidentify_timestamps"]
+    "module", ["scripts.build_group_summaries", "scripts.deidentify_timestamps"]
 )
 def test_help_and_parser_errors_never_write_sources(module, dataset):
     before = snapshot(dataset)
@@ -522,7 +522,7 @@ def test_output_hardlink_to_other_dataset_artifact_is_rejected(dataset, tmp_path
 
 
 @pytest.mark.parametrize(
-    "module", ["pipeline.build_group_summaries", "scripts.deidentify_timestamps"]
+    "module", ["scripts.build_group_summaries", "scripts.deidentify_timestamps"]
 )
 @pytest.mark.parametrize("kind", ["input", "output"])
 def test_cyclic_roots_fail_helpfully_without_traceback_or_writes(
@@ -543,7 +543,7 @@ def test_cyclic_roots_fail_helpfully_without_traceback_or_writes(
 
 
 @pytest.mark.parametrize(
-    "module", ["pipeline.build_group_summaries", "scripts.deidentify_timestamps"]
+    "module", ["scripts.build_group_summaries", "scripts.deidentify_timestamps"]
 )
 def test_cli_flags_cannot_be_abbreviated(module, dataset):
     before = snapshot(dataset)

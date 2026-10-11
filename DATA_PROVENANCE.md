@@ -39,8 +39,8 @@ The three `*_modified.csv` files and the legacy `*_00.csv` omit a leading header
 ## Reconciliation
 
 ```sh
-python -m pipeline.build_group_summaries --check
-python -m pipeline.build_group_summaries --output-root /tmp/mms-review
+python -m scripts.build_group_summaries --check
+python -m scripts.build_group_summaries --output-root /tmp/mms-review
 ```
 
 The legacy recipe pools raw sample SDs without filtering. It is numerically consistent with P02; this does not independently prove identity. With `rtol=0`, absolute tolerances are **1e-9** for interval/pupil SD and **3e-5 seconds** for duration SD, covering known rounding drift. Unexpected drift fails with exit 1. Check mode writes nothing.
