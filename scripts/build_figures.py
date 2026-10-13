@@ -21,7 +21,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from mms import io, paths, stats  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
-SESSIONS = ["Session 01", "Session 02", "Session 03"]
+SESSIONS = list(paths.SESSION_COLUMNS)
 LABELS = {
     "HRV_SDNN": "Interval-sample SD",
     "Pupil_Dilation_STD": "Pupil SD",
@@ -149,10 +149,10 @@ def build(output: Path, rows: list[dict], corr: pd.DataFrame, hashes: dict) -> N
             transform=ax.get_yaxis_transform(),
         )
     ax.set(
-        yticks=range(3),
+        yticks=range(len(rows)),
         yticklabels=[row["measure"] for row in rows],
         xlim=(minimum, 1),
-        ylim=(2.6, -0.6),
+        ylim=(len(rows) - 0.4, -0.6),
         xlabel="ICC(1,1) and 95% interval",
         title="Session consistency: released group summaries\n10 participants · 3 sessions · no diagnostic validation",
     )

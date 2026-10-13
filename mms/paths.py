@@ -153,20 +153,17 @@ def output_path(
     destination = _resolve(root / relative)
     if destination != root and root not in destination.parents:
         raise ValueError("output path escapes output_root")
-    if destination.exists() and not destination.is_file():
+    if not destination.exists():
+        return destination
+    if not destination.is_file():
         raise ValueError("output destination must be a file")
-    sources = (
-        tuple(
-            path
-            for source in _dataset_roots(data_root)
-            for path in source.rglob("*")
-            if path.is_file()
-        )
-        + _preserved_artifacts()
-        if destination.exists()
-        else ()
+    sources = tuple(
+        path
+        for source in _dataset_roots(data_root)
+        for path in source.rglob("*")
+        if path.is_file()
     )
-    for source in sources:
+    for source in sources + _preserved_artifacts():
         if destination == _resolve(source) or (
             destination.exists()
             and source.exists()

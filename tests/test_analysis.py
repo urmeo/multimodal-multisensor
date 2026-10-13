@@ -10,41 +10,40 @@ from mms import exploration as ex
 def questions(
     starts=("2024-01-01T00:00:00Z", "2024-01-01T00:00:02Z"), durations=(1, 1)
 ):
-    start = pd.Series(starts)
-    end = [
-        (pd.Timestamp(s) + pd.Timedelta(d, unit="s")).isoformat()
-        for s, d in zip(starts, durations)
+    start_times = pd.Series(starts)
+    end_times = [
+        (pd.Timestamp(start) + pd.Timedelta(duration, unit="s")).isoformat()
+        for start, duration in zip(starts, durations)
     ]
     return pd.DataFrame(
         {
             "Type": "HADS",
-            "Test": [f"{i + 1}. item" for i in range(len(start))],
+            "Test": [f"{item + 1}. item" for item in range(len(start_times))],
             "Question": "synthetic",
             "Answer": 1,
             "Time(s)": durations,
-            "Question Start Time": start,
-            "Question Answer Time": end,
+            "Question Start Time": start_times,
+            "Question Answer Time": end_times,
         }
     )
 
 
 def complete_questions():
+    origin = pd.Timestamp("2024-01-01T00:00:00Z")
     rows = []
     for kind, count in ex.EXPECTED_ITEMS.items():
-        for i in range(count):
-            stamp = pd.Timestamp("2024-01-01T00:00:00Z") + pd.Timedelta(
-                len(rows) * 2, unit="s"
-            )
+        for item in range(count):
+            start = origin + pd.Timedelta(len(rows) * 2, unit="s")
             rows.append(
                 {
                     "Type": kind,
-                    "Test": f"{i + 1}. item",
+                    "Test": f"{item + 1}. item",
                     "Question": "synthetic",
-                    "Answer": i % 4,
+                    "Answer": item % 4,
                     "Time(s)": 1.0,
-                    "Question Start Time": stamp.isoformat(),
+                    "Question Start Time": start.isoformat(),
                     "Question Answer Time": (
-                        stamp + pd.Timedelta(1, unit="s")
+                        start + pd.Timedelta(1, unit="s")
                     ).isoformat(),
                 }
             )
@@ -251,13 +250,48 @@ def test_derived_eye_keeps_source_rows_and_separate_event_duration():
     assert samples.legacy_low_movement.sum() == 1
 
 
+def test_derived_eye_marks_event_positions_with_duplicate_indices():
+    frame = pd.DataFrame(
+        {
+            "reltime": np.arange(7) * 0.05,
+            "gazeDir.x": 1 + np.arange(7) * 0.001,
+            "gazeDir.y": 0.0,
+            "gazeDir.z": 0.0,
+            "gazeQ": [1, 1, 1, 0, 1, 1, 1],
+        },
+        index=[9, 9, 3, 9, 3, 3, 9],
+    )
+    samples, events = ex.derive_eye(frame)
+    pd.testing.assert_frame_equal(samples[frame.columns], frame)
+    assert events.start_pos.tolist() == [1, 5]
+    assert events.end_pos.tolist() == [2, 6]
+    assert samples.legacy_low_movement.tolist() == [
+        False, True, True, False, False, True, True
+    ]
+    assert samples.event_id.fillna(-1).tolist() == [-1, 1, 1, -1, -1, 2, 2]
+
+
+@pytest.mark.parametrize("times", [[0, -0.1], [0, np.inf], [0, np.nan], [1, 0]])
+def test_gaze_rate_summary_rejects_invalid_clocks(times):
+    frame = eye_frame().iloc[:2].copy()
+    frame["reltime"] = times
+    with pytest.raises(ValueError):
+        ex.gaze_rate_summary({"Baseline": frame})
+
+
+def test_gaze_rate_summary_requires_quality():
+    with pytest.raises(ValueError, match="gazeQ"):
+        ex.gaze_rate_summary({"Baseline": eye_frame().drop(columns="gazeQ")})
+
+
 def test_pupil_quality_and_missing_values_are_consistent():
     row = ex.eye_summary({"Baseline": eye_frame()}).iloc[0]
     assert row.n_valid_pupil == 3
     assert row["Mean pupil (source units)"] == pytest.approx(13 / 3)
 
 
-def test_baseline_change_uses_matching_channel_and_original_units():
+@pytest.mark.parametrize("value_names", [list, iter], ids=["list", "iterator"])
+def test_baseline_change_uses_matching_channel_and_original_units(value_names):
     table = pd.DataFrame(
         {
             "Recording": ["Baseline", "Baseline", "Session 01", "Session 01"],
@@ -265,8 +299,22 @@ def test_baseline_change_uses_matching_channel_and_original_units():
             "Mean": [80, 100, 90, 95],
         }
     )
-    result = ex.baseline_changes(table, ["Mean"])
+    result = ex.baseline_changes(table, value_names(["Mean"]))
     assert result["Change in Mean"].tolist() == [0, 0, 10, -5]
+
+
+@pytest.mark.parametrize("value_names", [list, iter], ids=["list", "iterator"])
+def test_baseline_change_without_channels_preserves_all_requested_values(value_names):
+    table = pd.DataFrame(
+        {
+            "Recording": ["Baseline", "Session 01", "Session 02"],
+            "Mean": [80, 90, 75],
+            "SD": [10, 8, 11],
+        }
+    )
+    result = ex.baseline_changes(table, value_names(["Mean", "SD"]))
+    assert result["Change in Mean"].tolist() == [0, 10, -5]
+    assert result["Change in SD"].tolist() == [0, -2, 1]
 
 
 def test_export_requires_opt_in_and_protects_source_root(tmp_path, monkeypatch):

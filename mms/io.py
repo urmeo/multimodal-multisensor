@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from itertools import combinations
 from numbers import Real
 from pathlib import Path
 
@@ -198,17 +199,16 @@ def load_psychometric(
 def summary_duplicates(frame: pd.DataFrame, metric: str) -> tuple[set, set]:
     within, cross = set(), set()
     for _, row in frame.iterrows():
-        for i, first in enumerate(paths.SESSION_COLUMNS):
-            for second in paths.SESSION_COLUMNS[i + 1 :]:
-                if row[first] == row[second]:
-                    within.add(
-                        (
-                            metric,
-                            str(row["Participant"]),
-                            (first, second),
-                            float(row[first]),
-                        )
+        for first, second in combinations(paths.SESSION_COLUMNS, 2):
+            if row[first] == row[second]:
+                within.add(
+                    (
+                        metric,
+                        str(row["Participant"]),
+                        (first, second),
+                        float(row[first]),
                     )
+                )
     for session in paths.SESSION_COLUMNS:
         for value, count in frame[session].value_counts().items():
             if count > 1:

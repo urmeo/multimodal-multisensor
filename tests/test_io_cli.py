@@ -22,9 +22,9 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def snapshot(root):
     return {
-        p.relative_to(root).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest()
-        for p in root.rglob("*")
-        if p.is_file()
+        path.relative_to(root).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest()
+        for path in root.rglob("*")
+        if path.is_file()
     }
 
 

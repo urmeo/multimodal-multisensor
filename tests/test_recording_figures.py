@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from mms.paths import resolve_data_root
 from scripts.build_recording_figures import (
     digest,
     main,
@@ -73,8 +74,6 @@ def test_published_panels_are_bound_to_source_selections_and_bytes(tmp_path):
 
 def test_actual_recording_selection_inventory():
     data = payload()
-    from mms.paths import resolve_data_root
-
     info = provenance(data, resolve_data_root())
     assert info["counts"] == {
         "heart": {"3": 1432, "5": 1411},

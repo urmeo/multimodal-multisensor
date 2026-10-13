@@ -51,7 +51,7 @@ def test_two_sample_rolling_and_gap_keep_index_and_rows():
     frame = pd.DataFrame({"ibi": [800, 810, 0, 1000, 1020]}, index=[4, 4, 2, 8, 9])
     result = hrv.hrv_rolling(frame, window_beats=2)
     pd.testing.assert_frame_equal(result[frame.columns], frame)
-    assert result.rmssd.tolist()[1] == pytest.approx(10)
+    assert result.rmssd.iloc[1] == pytest.approx(10)
     assert result.rmssd.isna().tolist() == [True, False, True, True, False]
     assert result.rmssd.iloc[4] == pytest.approx(20)
 
@@ -80,6 +80,25 @@ def test_elapsed_gap_excludes_pairs():
     assert windows.rmssd.iloc[0] == pytest.approx(np.sqrt(250))
     rolling = hrv.hrv_rolling(frame, window_beats=2, max_gap_s=2)
     assert math.isnan(rolling.rmssd.iloc[2])
+
+
+def test_gap_filter_keeps_empty_windows_between_channel_samples():
+    frame = pd.DataFrame(
+        {"reltime": [0, 4], "iSensor": [1, 2], "ibi": [800, 810]}
+    )
+    windows = hrv.hrv_over_time(frame, window_s=2, step_s=3, max_gap_s=0.3)
+    assert len(windows) == 4
+    assert windows.n_samples.tolist() == [1, 0, 0, 1]
+    assert windows.n_pairs.tolist() == [0, 0, 0, 0]
+    assert windows[["sdnn", "rmssd"]].isna().all().all()
+
+
+def test_rolling_gap_filter_accepts_empty_stream_without_channels():
+    frame = pd.DataFrame({"reltime": [], "ibi": []})
+    result = hrv.hrv_rolling(frame, max_gap_s=1)
+    assert result.empty
+    pd.testing.assert_frame_equal(result[frame.columns], frame)
+    assert {"sdnn", "rmssd"} <= set(result)
 
 
 @pytest.mark.parametrize(
@@ -218,9 +237,8 @@ def test_correlation_joint_finite_masks_constants_and_family(method):
 
 def test_spearman_preserves_tiny_distinct_ranks():
     frame = pd.DataFrame({"a": [1e-300, 2e-300, 1e308], "b": [1, 2, 3]})
-    assert mstats.corr_matrix_fdr(frame, method="spearman")["r"].iloc[
-        0, 1
-    ] == pytest.approx(1)
+    result = mstats.corr_matrix_fdr(frame, method="spearman")
+    assert result["r"].iloc[0, 1] == pytest.approx(1)
 
 
 @pytest.mark.parametrize(

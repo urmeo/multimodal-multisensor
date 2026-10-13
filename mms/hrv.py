@@ -13,15 +13,21 @@ NN_MAX_MS = 2000.0
 
 
 def _real_series(values, name: str) -> pd.Series:
-    s = values.copy() if isinstance(values, pd.Series) else pd.Series(values)
-    if pd.api.types.is_datetime64_any_dtype(s) or pd.api.types.is_timedelta64_dtype(s):
+    series = values.copy() if isinstance(values, pd.Series) else pd.Series(values)
+    if (
+        pd.api.types.is_datetime64_any_dtype(series)
+        or pd.api.types.is_timedelta64_dtype(series)
+    ):
         raise ValueError(f"{name} must contain real numbers")
-    if any(isinstance(v, (bool, np.bool_, complex, np.complexfloating)) for v in s):
+    if any(
+        isinstance(value, (bool, np.bool_, complex, np.complexfloating))
+        for value in series
+    ):
         raise ValueError(
             f"{name} must contain real numbers, not boolean or complex values"
         )
     try:
-        return pd.to_numeric(s, errors="raise")
+        return pd.to_numeric(series, errors="raise")
     except (TypeError, ValueError) as exc:
         raise ValueError(f"{name} must contain real numbers") from exc
 
@@ -42,32 +48,26 @@ def _finite_real(value, name: str, *, positive: bool = False) -> float:
     return result
 
 
-def _bounds(lo, hi) -> tuple[float, float]:
+def _intervals(ibi, lo, hi) -> pd.Series:
     lo, hi = _finite_real(lo, "lo"), _finite_real(hi, "hi")
     if lo > hi:
         raise ValueError("lo must not exceed hi")
-    return lo, hi
-
-
-def _intervals(ibi, lo, hi) -> pd.Series:
-    lo, hi = _bounds(lo, hi)
-    s = _real_series(ibi, "ibi")
-    return s.where(np.isfinite(s) & (s > 0) & (s >= lo) & (s <= hi)).astype(float)
+    samples = _real_series(ibi, "ibi")
+    valid = np.isfinite(samples) & (samples > 0) & (samples >= lo) & (samples <= hi)
+    return samples.where(valid).astype(float)
 
 
 def _elapsed(values, name: str) -> np.ndarray:
-    s = _real_series(values, name)
-    if s.isna().any() or not np.isfinite(s).all() or (s < 0).any():
+    times = _real_series(values, name)
+    if times.isna().any() or not np.isfinite(times).all() or (times < 0).any():
         raise ValueError(f"{name} must contain finite nonnegative times")
-    if not s.is_monotonic_increasing:
+    if not times.is_monotonic_increasing:
         raise ValueError(f"{name} must be chronological")
-    if s.empty:
+    if times.empty:
         return np.empty(0, dtype=float)
-    origin = s.iloc[0].item() if isinstance(s.iloc[0], np.generic) else s.iloc[0]
-    elapsed = np.asarray(
-        [(v.item() if isinstance(v, np.generic) else v) - origin for v in s],
-        dtype=float,
-    )
+    # Subtract before converting to float to retain small steps in large integers.
+    raw = [value.item() if isinstance(value, np.generic) else value for value in times]
+    elapsed = np.asarray([value - raw[0] for value in raw], dtype=float)
     if not np.isfinite(elapsed).all():
         raise ValueError(f"{name} span is too large")
     return elapsed
@@ -82,9 +82,10 @@ def _gap(max_gap_s) -> float | None:
 
 
 def _time_differences(values) -> np.ndarray:
-    raw = list(values)
-    raw = [value.item() if isinstance(value, np.generic) else value for value in raw]
-    return np.asarray([b - a for a, b in zip(raw[:-1], raw[1:])], dtype=float)
+    raw = [value.item() if isinstance(value, np.generic) else value for value in values]
+    return np.asarray(
+        [later - earlier for earlier, later in zip(raw, raw[1:])], dtype=float
+    )
 
 
 def _rms(values: np.ndarray) -> float:
@@ -115,12 +116,10 @@ def clean_nn(ibi, lo: float = NN_MIN_MS, hi: float = NN_MAX_MS) -> pd.Series:
 def sdnn(ibi, lo: float = NN_MIN_MS, hi: float = NN_MAX_MS) -> float:
     """Sample SD in milliseconds after interval filtering."""
     samples = clean_nn(ibi, lo, hi)
-    scale = float(samples.abs().max()) if len(samples) else 0.0
-    return (
-        float((samples / scale).std(ddof=1) * scale)
-        if len(samples) > 1
-        else float("nan")
-    )
+    if len(samples) < 2:
+        return float("nan")
+    scale = float(samples.abs().max())
+    return float((samples / scale).std(ddof=1) * scale)
 
 
 def rmssd(ibi, lo: float = NN_MIN_MS, hi: float = NN_MAX_MS) -> float:
@@ -161,24 +160,22 @@ def hrv_rolling(
     groups, _ = _groups(df, channel_col)
     out = df.copy()
     sd, rms = np.full(len(df), np.nan), np.full(len(df), np.nan)
-    min_samples = max(2, int(window_beats) // 3)
+    window = int(window_beats)
+    min_samples = max(2, window // 3)
     for _, positions in groups:
         part = samples.iloc[positions].reset_index(drop=True)
         scale = float(part.abs().max()) if part.notna().any() else 1.0
         scaled = part / scale
         differences = scaled.diff()
-        if gap is not None:
-            differences = differences.where(
-                pd.Series(
-                    np.r_[False, _time_differences(df[time_col].iloc[positions]) <= gap]
-                )
-            )
+        if gap is not None and len(part) > 1:
+            within_gap = _time_differences(df[time_col].iloc[positions]) <= gap
+            differences.iloc[1:] = differences.iloc[1:].where(within_gap)
         sd[positions] = (
-            scaled.rolling(int(window_beats), min_periods=min_samples).std(ddof=1)
+            scaled.rolling(window, min_periods=min_samples).std(ddof=1)
             * scale
         )
         rms[positions] = (differences**2).rolling(
-            int(window_beats) - 1, min_periods=min_samples - 1
+            window - 1, min_periods=min_samples - 1
         ).mean() ** 0.5 * scale
     out["sdnn"], out["rmssd"] = sd, rms
     return out
@@ -213,22 +210,22 @@ def hrv_over_time(
     ):
         raise ValueError("max_windows must be an integer between 1 and 1000000")
     samples = _intervals(df[ibi_col], lo, hi)
-    t = _elapsed(df[time_col], time_col)
+    elapsed = _elapsed(df[time_col], time_col)
     groups, channel = _groups(df, channel_col)
     columns = ["window_start_s", "n_samples", "n_pairs", "n_beats", "sdnn", "rmssd"]
     if channel is not None:
         columns.insert(0, channel)
-    if not len(t):
+    if not len(elapsed):
         return pd.DataFrame(columns=columns)
-    span = float(t[-1])
+    span = float(elapsed[-1])
     count_ratio = span / step
     if not math.isfinite(count_ratio) or count_ratio > max_windows:
         raise ValueError("requested windows exceed max_windows")
     count = max(1, math.ceil(count_ratio))
     if count * len(groups) > max_windows:
         raise ValueError("requested channel windows exceed max_windows")
-    last = (count - 1) * step
-    if not math.isfinite(last + window) or last + window <= last:
+    last_start = (count - 1) * step
+    if not math.isfinite(last_start + window) or last_start + window <= last_start:
         raise ValueError("window end must be finite and advance in floating-point time")
     rows = []
     previous = -1.0
@@ -237,20 +234,17 @@ def hrv_over_time(
         if start <= previous:
             raise ValueError("step_s does not advance in floating-point time")
         previous = start
-        top = start + window
-        in_window = (t >= start) & ((t <= top) if top >= span else (t < top))
+        end = start + window
+        in_window = (elapsed >= start) & (
+            (elapsed <= end) if end >= span else (elapsed < end)
+        )
         for identity, positions in groups:
             selected = positions[in_window[positions]]
             part = samples.iloc[selected].reset_index(drop=True)
             differences = part.diff()
-            if gap is not None:
-                differences = differences.where(
-                    pd.Series(
-                        np.r_[
-                            False, _time_differences(df[time_col].iloc[selected]) <= gap
-                        ]
-                    )
-                )
+            if gap is not None and len(part) > 1:
+                within_gap = _time_differences(df[time_col].iloc[selected]) <= gap
+                differences.iloc[1:] = differences.iloc[1:].where(within_gap)
             valid_differences = differences.dropna().to_numpy(float)
             n_samples = int(part.notna().sum())
             row = {

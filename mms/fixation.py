@@ -62,16 +62,12 @@ def pupil_std(
 
 
 def _mask(values, name: str, length: int) -> tuple[np.ndarray, np.ndarray]:
-    s = pd.Series(values).reset_index(drop=True)
-    if len(s) != length:
+    series = pd.Series(values).reset_index(drop=True)
+    if len(series) != length:
         raise ValueError(f"{name} must have the same length as time")
-    if any(not isinstance(value, (bool, np.bool_)) for value in s.dropna()):
+    if any(not isinstance(value, (bool, np.bool_)) for value in series.dropna()):
         raise ValueError(f"{name} must contain boolean values")
-    known = s.notna().to_numpy(bool)
-    return np.asarray(
-        [bool(value) if present else False for value, present in zip(s, known)],
-        dtype=bool,
-    ), known
+    return series.to_numpy(dtype=bool, na_value=False), series.notna().to_numpy(bool)
 
 
 def contiguous_events(
@@ -189,21 +185,18 @@ def fixation_events(
         valid &= np.isfinite(vectors).all(axis=1) & (
             np.max(np.abs(vectors), axis=1) > 0
         )
+    if mask is None and "fixation" in sed:
+        mask = sed["fixation"]
     if mask is None:
-        if "fixation" in sed:
-            mask = sed["fixation"]
-        else:
-            if vectors is None:
-                raise ValueError(
-                    "a fixation mask or complete gaze coordinates is required"
-                )
-            with np.errstate(over="ignore", invalid="ignore"):
-                delta = np.linalg.norm(np.diff(vectors, axis=0), axis=1)
-            mask = np.zeros(len(sed), dtype=bool)
-            mask[1:] = np.isfinite(delta) & (delta < distance)
-            preceding_valid = np.zeros(len(sed), dtype=bool)
-            preceding_valid[1:] = valid.to_numpy(bool)[:-1]
-            valid &= preceding_valid
+        if vectors is None:
+            raise ValueError("a fixation mask or complete gaze coordinates is required")
+        with np.errstate(over="ignore", invalid="ignore"):
+            displacement = np.linalg.norm(np.diff(vectors, axis=0), axis=1)
+        mask = np.zeros(len(sed), dtype=bool)
+        mask[1:] = np.isfinite(displacement) & (displacement < distance)
+        preceding_valid = np.zeros(len(sed), dtype=bool)
+        preceding_valid[1:] = valid.to_numpy(bool)[:-1]
+        valid &= preceding_valid
     return contiguous_events(sed[time_col], mask, valid=valid, max_gap_s=max_gap_s)
 
 
@@ -233,13 +226,13 @@ def blink_events(
     times = _real_series(time, "time").reset_index(drop=True)
     events = contiguous_events(times, closed, valid=valid, max_gap_s=gap)
     selected = events[~events["left_censored"] & ~events["right_censored"]].copy()
-    for index, row in selected.iterrows():
-        reopening = times.iloc[int(row["end_pos"]) + 1]
-        onset = times.iloc[int(row["start_pos"])]
+    for event in selected.itertuples():
+        reopening = times.iloc[event.end_pos + 1]
+        onset = times.iloc[event.start_pos]
         reopening = reopening.item() if isinstance(reopening, np.generic) else reopening
         onset = onset.item() if isinstance(onset, np.generic) else onset
-        selected.loc[index, "end_s"] = reopening
-        selected.loc[index, "duration_s"] = float(reopening - onset)
+        selected.at[event.Index, "end_s"] = reopening
+        selected.at[event.Index, "duration_s"] = float(reopening - onset)
     return selected[selected["duration_s"].between(minimum, maximum)].reset_index(
         drop=True
     )
