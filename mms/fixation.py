@@ -5,7 +5,7 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-from .hrv import _elapsed, _finite_real, _gap, _real_series
+from .hrv import _elapsed, _finite_real, _gap, _real_series, _time_differences
 
 _EVENT_COLUMNS = [
     "event_id",
@@ -95,14 +95,7 @@ def contiguous_events(
     gap = _gap(max_gap_s)
     breaks = np.zeros(len(t), dtype=bool)
     if gap is not None and len(t) > 1:
-        breaks[1:] = [
-            float(
-                (b.item() if isinstance(b, np.generic) else b)
-                - (a.item() if isinstance(a, np.generic) else a)
-            )
-            > gap
-            for a, b in zip(t[:-1], t[1:])
-        ]
+        breaks[1:] = _time_differences(t) > gap
     rows: list[dict[str, object]] = []
     start = None
     left_censored = False
@@ -111,15 +104,14 @@ def contiguous_events(
         interrupted = position < len(t) and breaks[position]
         if start is not None and (not active or interrupted):
             last = position - 1
-            end_reason = (
-                "recording_end"
-                if position == len(t)
-                else "gap"
-                if interrupted
-                else "invalid"
-                if not good[position]
-                else "transition"
-            )
+            if position == len(t):
+                end_reason = "recording_end"
+            elif interrupted:
+                end_reason = "gap"
+            elif not good[position]:
+                end_reason = "invalid"
+            else:
+                end_reason = "transition"
             a = t[start].item() if isinstance(t[start], np.generic) else t[start]
             b = t[last].item() if isinstance(t[last], np.generic) else t[last]
             rows.append(

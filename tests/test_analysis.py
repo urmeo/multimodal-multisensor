@@ -184,6 +184,25 @@ def test_interval_summary_separates_channels_and_keeps_invalid_positions():
     assert result.loc[6, "Adjacent-sample RMS difference (ms)"] == 100
 
 
+@pytest.mark.parametrize("summarize", [ex.interval_summary, ex.interval_spectra])
+@pytest.mark.parametrize(
+    "column,values",
+    [
+        ("reltime", [1, 0]),
+        ("reltime", [0, np.inf]),
+        ("reltime", [0, np.nan]),
+        ("ibi", [800, True]),
+        ("ibi", [800, 1 + 2j]),
+        ("iSensor", [5, np.nan]),
+    ],
+)
+def test_interval_helpers_validate_stream_before_summarizing(summarize, column, values):
+    frame = pd.DataFrame({"reltime": [0, 1], "iSensor": [5, 5], "ibi": [800, 810]})
+    frame[column] = pd.Series(values, dtype=object)
+    with pytest.raises(ValueError):
+        summarize({"Baseline": frame})
+
+
 def test_hr_summary_filters_invalid_values_and_confidence():
     frame = pd.DataFrame(
         {

@@ -1,10 +1,12 @@
-"""Recording figures."""
+#!/usr/bin/env python3
+"""Check or draw channel-separated figures from case-study Session 1 raw exports."""
 
 from __future__ import annotations
 
 import argparse
 import hashlib
 import json
+import sys
 import tomllib
 from itertools import cycle
 from pathlib import Path
@@ -17,11 +19,13 @@ import numpy as np
 import pandas as pd
 from matplotlib import font_manager
 
-from mms import io, paths
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from mms import io, paths  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 NAMES = ("hr", "ibi", "sed")
 COLORS = ("#183b62", "#16888c", "#b05d38")
+FIGURE_NAMES = ("recorded-heart.png", "recorded-interval.png", "recorded-pupil.png")
 
 
 def samples(frame: pd.DataFrame, column: str, *, quality: str | None = None) -> dict:
@@ -215,10 +219,7 @@ def verify(output: Path, info: dict) -> None:
     actual = tomllib.loads((output / "recording-figures.toml").read_text())
     expected = {
         **info,
-        "figures": {
-            f"recorded-{name}.png": digest(output / f"recorded-{name}.png")
-            for name in ("heart", "interval", "pupil")
-        },
+        "figures": {name: digest(output / name) for name in FIGURE_NAMES},
     }
     if actual != expected:
         raise ValueError("recording figure sources, selections or image bytes differ")
@@ -228,28 +229,37 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, allow_abbrev=False)
     parser.add_argument("--data-root", type=Path)
     mode = parser.add_mutually_exclusive_group()
-    mode.add_argument("--check", action="store_true")
-    mode.add_argument("--output-root", type=Path)
+    mode.add_argument(
+        "--check",
+        action="store_true",
+        help="check saved figures without writing (default)",
+    )
+    mode.add_argument(
+        "--output-root",
+        type=Path,
+        help="write figures to a directory outside source data",
+    )
     args = parser.parse_args(argv)
     root = paths.resolve_data_root(args.data_root)
     data = payload(root)
     info = provenance(data, root)
     if args.output_root is None:
         verify(ROOT / "outputs", info)
+        action = "Verified"
     else:
-        for name in (
-            "recorded-heart.png",
-            "recorded-interval.png",
-            "recorded-pupil.png",
-            "recording-figures.toml",
-        ):
+        for name in (*FIGURE_NAMES, "recording-figures.toml"):
             paths.output_path(args.output_root, name, data_root=root)
         output = paths.resolve_output_root(args.output_root, data_root=root)
         output.mkdir(parents=True, exist_ok=True)
         render(output, data, info)
-    print("Verified 3 recording panels; no group, clock or diagnostic inference.")
+        action = "Wrote"
+    print(f"{action} {len(data)} recording panels for case-study Session 1.")
     return 0
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    try:
+        raise SystemExit(main())
+    except (OSError, ValueError, KeyError, TypeError) as error:
+        print(f"Error: {error}", file=sys.stderr)
+        raise SystemExit(1)

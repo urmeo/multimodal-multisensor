@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Read-only reconciliation, or explicit output outside the source dataset.
+"""Compare the historical calculation with released group row P02.
 
-The legacy pooled raw-STD recipe is numerically consistent with group row P02.
-That does not independently establish participant identity or NN-beat provenance.
-Filtered interval samples are reported separately per channel, not as beat HRV.
+For the released data, pooled sample SDs agree with P02 within set tolerances.
+This comparison does not establish participant identity or NN-beat provenance.
+Optional outputs report filtered sample variability separately for each channel.
 """
 
 from __future__ import annotations
@@ -243,9 +243,7 @@ def run(
         destination.parent.mkdir(parents=True, exist_ok=True)
         frame.to_csv(destination, index=False)
     destinations["MANIFEST.json"].write_text(serialized + "\n")
-    print(
-        f"Wrote {len(destinations)} explicit review outputs; source inputs unchanged."
-    )
+    print(f"Wrote {len(destinations)} review files; source inputs unchanged.")
     return True
 
 
@@ -254,16 +252,18 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument(
         "--data-root",
         type=Path,
-        help="folder containing case-study/individual/group_results",
+        help="directory containing case-study, individual and group_results",
     )
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument(
-        "--check", action="store_true", help="read-only reconciliation (default)"
+        "--check",
+        action="store_true",
+        help="compare summaries without writing (default)",
     )
     mode.add_argument(
         "--output-root",
         type=Path,
-        help="explicit review output directory outside source data",
+        help="write review files to a directory outside source data",
     )
     args = parser.parse_args(argv)
     try:
