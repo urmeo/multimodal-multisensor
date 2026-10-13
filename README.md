@@ -1,81 +1,51 @@
 # Multimodal-Multisensor
 
-**10 adults · 3 weekly sessions · eye, cardiac and questionnaire data**
+Data and Python analysis from a study of eye, cardiac and questionnaire measurements across three weekly sessions with 10 adults. The repository contains 51 CSV files, 24 raw sensor streams and 33 Jupyter notebooks. Eye and cardiac recordings are available. GSR collection was attempted; facial integration was unfinished.
 
-## Overview
+The shared `mms` package loads the recordings, checks schemas and calculates sample and event summaries. Separate scripts check the released group tables and reproduce figures. The analysis uses NumPy, pandas and SciPy, with Matplotlib for plots and scikit-learn for exploratory clustering. The questionnaires include HADS, STAI-S, STAI-T, BFI-10 and the Fear Questionnaire.
 
-| Release | Contents |
-| :--- | :--- |
-| Sources | 51 CSVs · 24 raw streams · 33 notebooks |
-| Instruments | HADS · STAI-S · STAI-T · BFI-10 · Fear Questionnaire |
-| Modalities | Eye/cardiac available; GSR attempted; facial integration unfinished |
+## Run the analysis
 
-## Data flow
-
-```mermaid
-flowchart LR
-    A[Recordings] --> B[Validated sample/event metrics]
-    B --> E[Separate review outputs]
-    G[Released group tables] --> D[ICC and correlations]
-    D --> E
-```
-
-## Results
-
-**ICC(1,1) · n=10 · 3 sessions · 95% intervals**
-
-| Within-session SD | ICC | Interval |
-| :--- | ---: | :--- |
-| Interval samples | 0.22 | −0.13 to 0.66 |
-| Pupil | 0.45 | 0.07 to 0.79 |
-| Response duration | 0.61 | 0.25 to 0.87 |
-
-<img src="outputs/reliability.png" alt="ICC estimates and 95 percent intervals" width="900" />
-<img src="outputs/correlation.png" alt="Descriptive Spearman correlations" width="900" />
-
-## Setup
-
-<img src="images/experimental_setup.jpg" alt="Original sensor setup" width="900" />
-<img src="images/data_collection_session.jpg" alt="Consented session photograph" width="900" />
-
-## Verify
-
-Research notebooks: [case study](notebooks/case-study) · [group](notebooks/group) · [individual](notebooks/individual). Shared code is in `mms/`; commands are in `scripts/`.
+Use Python 3.11 or 3.12. From a clone of this repository:
 
 ```sh
-python -m pip install -e '.[dev]'
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install -e '.[dev,notebooks]'
 python -m pytest tests -q
 python -m scripts.build_group_summaries --check
+python -m scripts.build_figures --check
+python -m scripts.build_recording_figures --check
 ```
 
-**Python 3.11/3.12** · [Notebook and hashed-install commands](CONTRIBUTING.md)
+The `--check` commands read the source data without writing files. To inspect the notebooks, run `jupyter lab notebooks`. They are organized into [case study](notebooks/case-study), [group](notebooks/group) and [individual](notebooks/individual) analyses. Run `python scripts/verify_notebooks.py` to execute all 33 in a temporary workspace and check that their inputs stay unchanged.
 
-## Limits
+See [CONTRIBUTING.md](CONTRIBUTING.md) for output settings and the hashed Linux environment. Installed wheels contain code only; use a repository checkout for the included data and notebooks.
 
-- **10 participants:** wide uncertainty; no diagnostic or stable-trait validation.
-- **Sampled intervals:** unique beats and cross-stream clock alignment unverified.
-- **Source gaps:** 2 suspected duplicate patterns; most group rows cannot be rebuilt.
+## Results and limitations
 
-## Tech stack
+The released group tables give the following ICC(1,1) estimates for the consistency of within-session standard deviations across three sessions. Each estimate uses 10 participant rows and a 95% confidence interval.
 
-| Layer | Tools |
-| :--- | :--- |
-| Analysis | Python · NumPy · pandas · SciPy |
-| Exploration | Jupyter · scikit-learn |
-| Figures | Matplotlib |
+| Within-session standard deviation | ICC | 95% interval |
+| :--- | ---: | :--- |
+| Interval samples | 0.22 | −0.13 to 0.66 |
+| Pupil diameter | 0.45 | 0.07 to 0.79 |
+| Response duration | 0.61 | 0.25 to 0.87 |
 
-## Ethics and data use
+![ICC estimates and 95 percent confidence intervals](outputs/reliability.png)
 
-Sharing/photo consent recorded; residual dates/device labels remain. [Consent](DATA_ETHICS.md) · [Terms](DATA_LICENSE.md) · [Instrument rights](NOTICE.md)
+These calculations describe the released tables. The small sample and wide intervals do not establish diagnostic accuracy or stable traits. The [Spearman correlation plot](outputs/correlation.png) is also descriptive.
 
-## Sources
+- Repeated cardiac interval samples are not verified unique beats. Cross-stream clock alignment is unverified.
+- Two equality patterns in the group tables are suspected duplicates. Most participant rows cannot be reconstructed from the available raw recordings.
+- The case-study summaries numerically match group row P02. That match does not independently confirm participant identity.
 
-[Technical report](docs/reports/Multimodal%20Multisensor%20Technical%20Report.pdf) · [Thesis](docs/reports/Thesis%20Report.pdf) · [Proposed protocol](docs/reports/CYPSY_Poster.pdf)
+The [data provenance](DATA_PROVENANCE.md) describes schemas, units, source gaps and reconciliation tolerances. The [figure notes](docs/FIGURES.md) record source hashes, filters and historical images, including photographs of the experimental setup.
 
-[Corrections](docs/REPORT_STATUS.md) · [Figures](docs/FIGURES.md) · [Data contract](DATA_PROVENANCE.md)
+## Documentation and data use
 
-[Sensor](https://github.com/urmeo/sensor) · [Psychometric](https://github.com/urmeo/psychometric) · [CalmSense](https://github.com/urmeo/calm-sense)
+The original [technical report](docs/reports/Multimodal%20Multisensor%20Technical%20Report.pdf), [thesis](docs/reports/Thesis%20Report.pdf) and [proposed protocol](docs/reports/CYPSY_Poster.pdf) are preserved. Read the [report corrections](docs/REPORT_STATUS.md) alongside them.
 
-**Keywords:** recordings · sessions · variability · uncertainty
+The author records consent for sharing and session photographs. Dates, device labels, responses and recognizable photos remain in the release; participant codes do not make it anonymous. Review the [consent account](DATA_ETHICS.md), [data terms](DATA_LICENSE.md) and [questionnaire rights](NOTICE.md) before reuse. Code and notebooks use the [MIT license](LICENSE). Cite the data using [CITATION.cff](CITATION.cff).
 
-Code: [MIT](LICENSE). Data: [separate terms](DATA_LICENSE.md).
+Related repositories: [Sensor](https://github.com/urmeo/sensor), [Psychometric](https://github.com/urmeo/psychometric) and [CalmSense](https://github.com/urmeo/calm-sense).
