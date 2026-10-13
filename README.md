@@ -1,8 +1,12 @@
 # Multimodal-Multisensor
 
-Data and Python analysis from a study of eye, cardiac and questionnaire measurements across three weekly sessions with 10 adults. The repository contains 51 CSV files, 24 raw sensor streams and 33 Jupyter notebooks. Eye and cardiac recordings are available. GSR collection was attempted; facial integration was unfinished.
+Python analysis of eye, cardiac and questionnaire data from 10 adults across three weekly sessions. The code checks recordings, measures within-session variation and compares session summaries.
 
-The shared `mms` package loads the recordings, checks schemas and calculates sample and event summaries. Separate scripts check the released group tables and reproduce figures. The analysis uses NumPy, pandas and SciPy, with Matplotlib for plots and scikit-learn for exploratory clustering. The questionnaires include HADS, STAI-S, STAI-T, BFI-10 and the Fear Questionnaire.
+![Project pipeline: check recordings and released group tables, calculate descriptive summaries and session statistics, then produce plots and tables. Clock-dependent analyses are optional.](images/pipeline.svg)
+
+The repository contains 51 CSV files, 24 raw sensor streams and 33 Jupyter notebooks. Eye and cardiac recordings are available. GSR collection was attempted; facial integration was unfinished.
+
+The shared `mms` package uses NumPy, pandas and SciPy for analysis, Matplotlib for plots and scikit-learn for exploratory clustering. The questionnaires include HADS, STAI-S, STAI-T, BFI-10 and the Fear Questionnaire.
 
 ## Run the analysis
 
