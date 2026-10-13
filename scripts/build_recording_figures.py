@@ -29,7 +29,9 @@ FIGURE_NAMES = ("recorded-heart.png", "recorded-interval.png", "recorded-pupil.p
 
 
 def samples(frame: pd.DataFrame, column: str, *, quality: str | None = None) -> dict:
-    fields = ["reltime", "iSensor", column, *([quality] if quality else [])]
+    fields = ["reltime", "iSensor", column]
+    if quality:
+        fields.append(quality)
     numeric = frame[fields].apply(pd.to_numeric, errors="raise")
     channels = numeric["iSensor"].to_numpy(float)
     if not np.isfinite(channels).all() or np.any(channels % 1):
@@ -98,12 +100,11 @@ def provenance(data: dict, data_root: Path) -> dict:
 
 
 def render(output: Path, data: dict, info: dict) -> None:
-    font = Path("/System/Library/Fonts/Supplemental/Times New Roman.ttf")
-    if font.exists():
-        font_manager.fontManager.addfont(str(font))
-        font_manager.fontManager.addfont(
-            str(font.with_name("Times New Roman Bold.ttf"))
-        )
+    font_directory = Path("/System/Library/Fonts/Supplemental")
+    for filename in ("Times New Roman.ttf", "Times New Roman Bold.ttf"):
+        font = font_directory / filename
+        if font.is_file():
+            font_manager.fontManager.addfont(str(font))
     plt.rcParams.update(
         {
             "font.family": "serif",
@@ -155,13 +156,13 @@ def render(output: Path, data: dict, info: dict) -> None:
         for color, (channel, values) in zip(
             cycle(COLORS), groups.items(), strict=False
         ):
-            y = np.asarray(values["values"], dtype=float)
-            label = f"Channel {channel} · {len(y):,} readings"
+            readings = np.asarray(values["values"], dtype=float)
+            label = f"Channel {channel} · {len(readings):,} readings"
             if name == "interval":
-                y = np.sort(y)
+                readings = np.sort(readings)
                 ax.step(
-                    np.r_[y[0], y],
-                    np.r_[0, np.arange(1, len(y) + 1) / len(y)],
+                    np.r_[readings[0], readings],
+                    np.r_[0, np.arange(1, len(readings) + 1) / len(readings)],
                     where="post",
                     color=color,
                     label=label,
@@ -169,10 +170,10 @@ def render(output: Path, data: dict, info: dict) -> None:
                 )
             elif name == "pupil":
                 ax.scatter(
-                    values["time_s"], y, s=3, alpha=0.45, color=color, label=label
+                    values["time_s"], readings, s=3, alpha=0.45, color=color, label=label
                 )
             else:
-                ax.plot(values["time_s"], y, linewidth=1.3, color=color, label=label)
+                ax.plot(values["time_s"], readings, linewidth=1.3, color=color, label=label)
         ax.set(
             xlabel=unit if name == "interval" else "Recording-relative time (s)",
             ylabel="Cumulative fraction of readings" if name == "interval" else unit,

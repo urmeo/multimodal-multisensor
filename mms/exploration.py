@@ -39,13 +39,15 @@ def recordings(kind, *, source="case-study"):
     loaders = {
         "hr": io.load_hr,
         "ibi": io.load_ibi,
-        "eye": lambda s, **kw: io.load_raw("sed", s, **kw),
+        "eye": lambda session, **kwargs: io.load_raw("sed", session, **kwargs),
     }
     if kind not in loaders:
         raise ValueError("kind must be hr, ibi or eye")
     return {
-        session_label(s): loaders[kind](s, source=source, data_root=data_root())
-        for s in SESSIONS
+        session_label(session): loaders[kind](
+            session, source=source, data_root=data_root()
+        )
+        for session in SESSIONS
     }
 
 
@@ -124,11 +126,10 @@ def low_movement_events(frame):
 
 def closure_candidates(frame):
     """Both eye-openness values <=1; quality >=0.5, duration 0.05–0.5s, gaps <=0.1s."""
-    values = [
+    left, right, left_quality, right_quality = (
         _real(frame[name], name)
         for name in ("leftEyeOpen", "rightEyeOpen", "leftEyeOpenQ", "rightEyeOpenQ")
-    ]
-    left, right, left_quality, right_quality = values
+    )
     valid = (
         np.isfinite(left)
         & np.isfinite(right)
@@ -278,19 +279,19 @@ def question_features(session, *, source="case-study", sensor_timezone=None):
     }
     channels = sorted(set(ibi["iSensor"]) | set(hr["iSensor"]))
     rows = []
-    for pos in range(len(questions)):
-        item = questions.iloc[pos]
-        eye_part = eye.loc[selected["eye"].eq(pos).fillna(False)]
+    for position in range(len(questions)):
+        item = questions.iloc[position]
+        eye_part = eye.loc[selected["eye"].eq(position).fillna(False)]
         pupils = fixation.pupil_samples(eye_part, quality_min=0.5)
         events = low_movement_events(eye_part)
         complete = events.loc[~events["left_censored"] & ~events["right_censored"]]
         closures, observed = closure_candidates(eye_part)
         for channel in channels:
             heart = hr.loc[
-                selected["hr"].eq(pos).fillna(False) & hr["iSensor"].eq(channel)
+                selected["hr"].eq(position).fillna(False) & hr["iSensor"].eq(channel)
             ]
             intervals = ibi.loc[
-                selected["ibi"].eq(pos).fillna(False) & ibi["iSensor"].eq(channel)
+                selected["ibi"].eq(position).fillna(False) & ibi["iSensor"].eq(channel)
             ]
             heart_samples = _valid_hr(heart)
             interval_samples = hrv._intervals(
@@ -334,7 +335,8 @@ def aligned_questions(*, source="case-study"):
         )
         return pd.DataFrame()
     frames = [
-        question_features(s, source=source, sensor_timezone=zone) for s in (1, 2, 3)
+        question_features(session, source=source, sensor_timezone=zone)
+        for session in (1, 2, 3)
     ]
     return pd.concat(frames, ignore_index=True)
 
@@ -390,7 +392,7 @@ def paired_group_tests(frames):
     """Participant-paired changes; Holm families: all omnibus and all pair tests."""
     if not frames:
         raise ValueError("at least one repeated-session metric is required")
-    pair_rows, omnibus = [], []
+    pair_rows, omnibus_rows = [], []
     for metric, frame in frames.items():
         values = (
             frame.apply(_real, name="group measurements")
@@ -400,27 +402,27 @@ def paired_group_tests(frames):
         if values.shape[1] != 3:
             raise ValueError("three repeated session columns are required")
         if len(values) >= 3 and np.any(np.ptp(values.to_numpy(), axis=1) > 0):
-            statistic, p = scipy_stats.friedmanchisquare(
+            statistic, p_value = scipy_stats.friedmanchisquare(
                 *(values.iloc[:, i] for i in range(3))
             )
         else:
-            statistic, p = np.nan, np.nan
-        omnibus.append(
+            statistic, p_value = np.nan, np.nan
+        omnibus_rows.append(
             {
                 "Metric": metric,
                 "n_participants": len(values),
                 "Friedman statistic": statistic,
-                "p_raw": p,
+                "p_raw": p_value,
             }
         )
         for i, j in combinations(range(3), 2):
             difference = values.iloc[:, j] - values.iloc[:, i]
             if len(difference) < 2:
-                p = np.nan
+                p_value = np.nan
             elif np.all(difference == 0):
-                p = 1.0
+                p_value = 1.0
             else:
-                p = scipy_stats.wilcoxon(difference).pvalue
+                p_value = scipy_stats.wilcoxon(difference).pvalue
             sd = difference.std(ddof=1)
             mean = difference.mean()
             width = (
@@ -439,13 +441,14 @@ def paired_group_tests(frames):
                     "CI low": mean - width,
                     "CI high": mean + width,
                     "Paired d_z": mean / sd if sd > 0 else np.nan,
-                    "p_raw": p,
+                    "p_raw": p_value,
                 }
             )
-    pair, omni = pd.DataFrame(pair_rows), pd.DataFrame(omnibus)
-    for table in (pair, omni):
+    pair_table = pd.DataFrame(pair_rows)
+    omnibus_table = pd.DataFrame(omnibus_rows)
+    for table in (pair_table, omnibus_table):
         table["p_holm"] = stats.holm(table["p_raw"].to_numpy())
-    return omni, pair
+    return omnibus_table, pair_table
 
 
 def cluster_features(frame, *, n_clusters=3):
@@ -474,9 +477,11 @@ def cluster_features(frame, *, n_clusters=3):
         scaled
     )
     projection = PCA(n_components=2).fit_transform(scaled)
-    return pd.DataFrame(projection, index=values.index, columns=["PC1", "PC2"]).assign(
-        Cluster=labels
-    ), silhouette_score(scaled, labels)
+    projected = pd.DataFrame(
+        projection, index=values.index, columns=["PC1", "PC2"]
+    )
+    projected["Cluster"] = labels
+    return projected, silhouette_score(scaled, labels)
 
 
 def synchronized_features(session, *, source="case-study"):
@@ -496,38 +501,37 @@ def synchronized_features(session, *, source="case-study"):
     eye = io.load_raw("sed", session, source=source, data_root=data_root())
     rows = []
     for channel, part in _channels(ibi):
-        h = hr.loc[hr["iSensor"].eq(channel)].copy()
-        b = part.copy()
-        e = eye.copy()
-        for f in (h, b, e):
-            f["clock"] = io.parse_datetime(
-                f["datetime"], naive_timezone=zone
+        heart = hr.loc[hr["iSensor"].eq(channel)].copy()
+        intervals = part.copy()
+        gaze = eye.copy()
+        for stream in (heart, intervals, gaze):
+            stream["clock"] = io.parse_datetime(
+                stream["datetime"], naive_timezone=zone
             ).dt.tz_convert("UTC")
-        if any(f["clock"].duplicated().any() for f in (h, b, e)):
+        if any(
+            stream["clock"].duplicated().any() for stream in (heart, intervals, gaze)
+        ):
             raise ValueError(
                 "synchronized feature timestamps must be unique within each stream/channel"
             )
-        e["pupil"] = fixation.pupil_samples(e, quality_min=0.5)
-        h["heart_rate"] = _valid_hr(h)
-        b["ibi"] = hrv._intervals(b["ibi"], hrv.NN_MIN_MS, hrv.NN_MAX_MS)
-        base = b[["clock", "ibi"]].merge(
-            h[["clock", "heart_rate"]], on="clock", validate="one_to_one"
+        gaze["pupil"] = fixation.pupil_samples(gaze, quality_min=0.5)
+        heart["heart_rate"] = _valid_hr(heart)
+        intervals["ibi"] = hrv._intervals(
+            intervals["ibi"], hrv.NN_MIN_MS, hrv.NN_MAX_MS
         )
-        base = pd.merge_asof(
-            base.sort_values("clock"),
-            e[["clock", "pupil"]].sort_values("clock"),
+        joined = intervals[["clock", "ibi"]].merge(
+            heart[["clock", "heart_rate"]], on="clock", validate="one_to_one"
+        )
+        joined = pd.merge_asof(
+            joined.sort_values("clock"),
+            gaze[["clock", "pupil"]].sort_values("clock"),
             on="clock",
             direction="backward",
             tolerance=pd.Timedelta(100, unit="ms"),
         )
-        base = base.loc[
-            np.isfinite(base["ibi"])
-            & base["ibi"].between(300, 2000)
-            & np.isfinite(base["heart_rate"])
-            & (base["heart_rate"] > 0)
-        ]
-        base["Channel"] = channel
-        rows.append(base)
+        joined = joined.dropna(subset=["ibi", "heart_rate"])
+        joined["Channel"] = channel
+        rows.append(joined)
     return pd.concat(rows, ignore_index=True) if rows else pd.DataFrame()
 
 
@@ -715,7 +719,9 @@ def gaze_rate_summary(streams):
     """Source-vector displacement per elapsed second; not angular velocity."""
     rows = []
     for label, frame in streams.items():
-        low_movement_events(frame)
+        hrv._elapsed(frame["reltime"], "reltime")
+        if "gazeQ" not in frame:
+            raise ValueError("gazeQ is required for fixation events")
         columns = [f"gazeDir.{axis}" for axis in "xyz"]
         xyz = frame[columns].apply(_real, name="gaze vector")
         quality = _real(frame["gazeQ"], "gazeQ")
@@ -729,14 +735,15 @@ def gaze_rate_summary(streams):
         rate = (step / delta).where(
             valid & valid.shift(fill_value=False) & delta.gt(0) & delta.le(0.1)
         )
+        n_valid_steps = int(rate.notna().sum())
         rows.append(
             {
                 "Recording": label,
-                "n_valid_steps": int(rate.notna().sum()),
+                "n_valid_steps": n_valid_steps,
                 "Mean source-vector rate (1/s)": rate.mean(),
                 "Fraction of valid steps >0.1/s": rate.gt(0.1).sum()
-                / rate.notna().sum()
-                if rate.notna().any()
+                / n_valid_steps
+                if n_valid_steps
                 else np.nan,
             }
         )
@@ -842,8 +849,9 @@ def within_instrument_fits(features):
 
 def baseline_changes(table, values):
     """One recorded baseline; differences retain each feature's original units."""
+    values = list(values)
     keys = ["Channel"] if "Channel" in table else []
-    baseline = table.loc[table["Recording"] == "Baseline", keys + list(values)]
+    baseline = table.loc[table["Recording"] == "Baseline", keys + values]
     if keys:
         joined = table.merge(
             baseline, on=keys, suffixes=("", "_baseline"), validate="many_to_one"
@@ -865,8 +873,10 @@ def derive_eye(frame):
     samples = frame.copy()
     samples["legacy_low_movement"] = False
     samples["event_id"] = pd.Series(pd.NA, index=frame.index, dtype="Int64")
+    movement_column = samples.columns.get_loc("legacy_low_movement")
+    event_column = samples.columns.get_loc("event_id")
     for event in events.itertuples(index=False):
-        positions = np.arange(event.start_pos, event.end_pos + 1)
-        samples.iloc[positions, samples.columns.get_loc("legacy_low_movement")] = True
-        samples.iloc[positions, samples.columns.get_loc("event_id")] = event.event_id
+        positions = slice(event.start_pos, event.end_pos + 1)
+        samples.iloc[positions, movement_column] = True
+        samples.iloc[positions, event_column] = event.event_id
     return samples, events

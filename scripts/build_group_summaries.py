@@ -19,7 +19,7 @@ import numpy as np
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-import mms  # noqa: E402
+from mms import fixation, hrv, io, paths  # noqa: E402
 
 SESSIONS = (1, 2, 3)
 CONSISTENT_GROUP_ROW = "P02"
@@ -33,14 +33,14 @@ METRIC_TOLERANCES = {
 def _numeric(frame: pd.DataFrame, column: str) -> pd.Series:
     if column not in frame:
         raise ValueError(f"required column absent: {column}")
-    values = mms.hrv._real_series(frame[column], column)
+    values = hrv._real_series(frame[column], column)
     if len(values) < 2 or not np.isfinite(values.to_numpy(float)).all():
         raise ValueError(f"{column} requires at least two finite source samples")
     return values
 
 
 def _validate_channels(frame: pd.DataFrame) -> None:
-    values = mms.hrv._real_series(frame["iSensor"], "iSensor")
+    values = hrv._real_series(frame["iSensor"], "iSensor")
     if not np.isfinite(values.to_numpy(float)).all() or (values % 1 != 0).any():
         raise ValueError("iSensor must contain finite integer channel identifiers")
 
@@ -48,9 +48,9 @@ def _validate_channels(frame: pd.DataFrame) -> None:
 def _inputs(data_root: str | Path | None) -> tuple[dict, dict]:
     streams, committed = {}, {}
     for session in SESSIONS:
-        ibi = mms.io.load_ibi(session, data_root=data_root)
-        eye = mms.io.load_fixation(session, data_root=data_root)
-        psych = mms.io.load_psychometric(session, data_root=data_root)
+        ibi = io.load_ibi(session, data_root=data_root)
+        eye = io.load_fixation(session, data_root=data_root)
+        psych = io.load_psychometric(session, data_root=data_root)
         for frame, columns in (
             (ibi, ("ibi", "iSensor")),
             (eye, ("pupil", "pupilQ", "iSensor")),
@@ -61,8 +61,8 @@ def _inputs(data_root: str | Path | None) -> tuple[dict, dict]:
         for frame in (ibi, eye):
             _validate_channels(frame)
         streams[session] = (ibi, eye, psych)
-    for metric in mms.paths.GROUP_METRICS:
-        committed[metric] = mms.io.load_group_summary(metric, data_root=data_root)
+    for metric in paths.GROUP_METRICS:
+        committed[metric] = io.load_group_summary(metric, data_root=data_root)
     return streams, committed
 
 
@@ -72,7 +72,7 @@ def original_recipe(
     """Historical pooled sample standard deviations, with no artifact filtering."""
     if streams is None:
         streams, _ = _inputs(data_root)
-    values: dict[str, list[float]] = {metric: [] for metric in mms.paths.GROUP_METRICS}
+    values: dict[str, list[float]] = {metric: [] for metric in paths.GROUP_METRICS}
     for session in SESSIONS:
         ibi, eye, psych = streams[session]
         for metric, frame, column in (
@@ -92,7 +92,7 @@ def filtered_sample_metrics(streams: dict) -> list[dict]:
     records = []
     for session, (ibi, eye, _) in streams.items():
         for channel, group in ibi.groupby("iSensor", sort=True):
-            kept = mms.hrv.clean_nn(group["ibi"])
+            kept = hrv.clean_nn(group["ibi"])
             if len(kept) >= 2:
                 records.append(
                     {
@@ -100,11 +100,11 @@ def filtered_sample_metrics(streams: dict) -> list[dict]:
                         "channel": int(channel),
                         "metric": "interval_sample_sd_ms",
                         "n_samples": len(kept),
-                        "value": mms.hrv.sdnn(group["ibi"]),
+                        "value": hrv.sdnn(group["ibi"]),
                     }
                 )
         for channel, group in eye.groupby("iSensor", sort=True):
-            kept = mms.fixation.pupil_samples(group, quality_min=0.5).dropna()
+            kept = fixation.pupil_samples(group, quality_min=0.5).dropna()
             if len(kept) >= 2:
                 records.append(
                     {
@@ -112,7 +112,7 @@ def filtered_sample_metrics(streams: dict) -> list[dict]:
                         "channel": int(channel),
                         "metric": "pupil_sample_sd_reported_mm",
                         "n_samples": len(kept),
-                        "value": mms.fixation.pupil_std(group, quality_min=0.5),
+                        "value": fixation.pupil_std(group, quality_min=0.5),
                     }
                 )
     return records
@@ -122,11 +122,11 @@ def reconcile(original: dict, summaries: dict) -> dict:
     reconciliation = {}
     for metric, tolerance in METRIC_TOLERANCES.items():
         frame = summaries[metric]
-        mms.io.validate_group_summary(frame, metric)
+        io.validate_group_summary(frame, metric)
         row = (
             frame.loc[
                 frame["Participant"] == CONSISTENT_GROUP_ROW,
-                list(mms.paths.SESSION_COLUMNS),
+                list(paths.SESSION_COLUMNS),
             ]
             .to_numpy(float)
             .ravel()
@@ -148,15 +148,15 @@ def reconcile(original: dict, summaries: dict) -> dict:
 
 def _source_hashes(data_root: Path) -> dict:
     names = [
-        f"case-study/processed/{kind}_{s:02d}.csv"
-        for s in SESSIONS
+        f"case-study/processed/{kind}_{session:02d}.csv"
+        for session in SESSIONS
         for kind in ("ibi", "sed_fix")
     ]
     names += [
-        f"case-study/psychometric/Psychometric_Test_Results_{s:02d}.csv"
-        for s in SESSIONS
+        f"case-study/psychometric/Psychometric_Test_Results_{session:02d}.csv"
+        for session in SESSIONS
     ]
-    names += [f"group_results/{metric}.csv" for metric in mms.paths.GROUP_METRICS]
+    names += [f"group_results/{metric}.csv" for metric in paths.GROUP_METRICS]
     return {
         name: hashlib.sha256((data_root / name).read_bytes()).hexdigest()
         for name in names
@@ -166,7 +166,7 @@ def _source_hashes(data_root: Path) -> dict:
 def run(
     data_root: str | Path | None = None, output_root: str | Path | None = None
 ) -> bool:
-    source = mms.paths.resolve_data_root(data_root)
+    source = paths.resolve_data_root(data_root)
     streams, committed = _inputs(source)
     original = original_recipe(source, streams=streams)
     reconciliation = reconcile(original, committed)
@@ -184,7 +184,7 @@ def run(
     records = filtered_sample_metrics(streams)
     duplicate_flags: list[dict] = []
     for metric, frame in committed.items():
-        within, cross = mms.io.summary_duplicates(frame, metric)
+        within, cross = io.summary_duplicates(frame, metric)
         duplicate_flags.extend(
             {
                 "metric": item[0],
@@ -228,13 +228,13 @@ def run(
     frames = {
         f"{metric}_P02_consistency.csv": pd.DataFrame(
             [[CONSISTENT_GROUP_ROW, *values]],
-            columns=["Participant", *mms.paths.SESSION_COLUMNS],
+            columns=["Participant", *paths.SESSION_COLUMNS],
         )
         for metric, values in original.items()
     }
     frames["filtered_channel_sample_variability.csv"] = pd.DataFrame(records)
     destinations = {
-        name: mms.paths.output_path(output_root, name, data_root=source)
+        name: paths.output_path(output_root, name, data_root=source)
         for name in (*frames, "MANIFEST.json")
     }
     serialized = json.dumps(manifest, indent=2, allow_nan=False)
