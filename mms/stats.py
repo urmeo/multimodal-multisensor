@@ -66,7 +66,7 @@ def _pvalues(pvals) -> np.ndarray:
     if raw.ndim != 1:
         raise ValueError("p-values must be a one-dimensional vector")
     p = _real_series(raw, "p-values").to_numpy(float)
-    if np.isinf(p).any() or ((p[~np.isnan(p)] < 0) | (p[~np.isnan(p)] > 1)).any():
+    if ((p < 0) | (p > 1)).any():
         raise ValueError("p-values must be in [0, 1], with NaN for unrun tests")
     return p
 

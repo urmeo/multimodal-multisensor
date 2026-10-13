@@ -87,6 +87,16 @@ def _time_differences(values) -> np.ndarray:
     return np.asarray([b - a for a, b in zip(raw[:-1], raw[1:])], dtype=float)
 
 
+def _rms(values: np.ndarray) -> float:
+    """Root mean square of finite values, scaled to avoid squaring overflow."""
+    if not len(values):
+        return float("nan")
+    scale = np.max(np.abs(values))
+    if scale == 0:
+        return 0.0
+    return float(scale * np.sqrt(np.mean((values / scale) ** 2)))
+
+
 def _groups(df: pd.DataFrame, channel_col: str | None):
     if channel_col is None or channel_col not in df.columns:
         return [(None, np.arange(len(df)))], None
@@ -115,11 +125,8 @@ def sdnn(ibi, lo: float = NN_MIN_MS, hi: float = NN_MAX_MS) -> float:
 
 def rmssd(ibi, lo: float = NN_MIN_MS, hi: float = NN_MAX_MS) -> float:
     """RMS difference of valid adjacent interval samples, without joining gaps."""
-    diffs = _intervals(ibi, lo, hi).diff().dropna().to_numpy(float)
-    if not len(diffs):
-        return float("nan")
-    scale = np.max(np.abs(diffs))
-    return float(scale * np.sqrt(np.mean((diffs / scale) ** 2))) if scale else 0.0
+    differences = _intervals(ibi, lo, hi).diff().dropna().to_numpy(float)
+    return _rms(differences)
 
 
 def hrv_rolling(
@@ -147,8 +154,9 @@ def hrv_rolling(
         raise ValueError("window_beats must be an integer >= 2 within platform limits")
     gap = _gap(max_gap_s)
     samples = _intervals(df[ibi_col], lo, hi)
-    times = _elapsed(df[time_col], time_col) if time_col in df else None
-    if gap is not None and times is None:
+    if time_col in df:
+        _elapsed(df[time_col], time_col)
+    elif gap is not None:
         raise ValueError(f"{time_col} is required with max_gap_s")
     groups, _ = _groups(df, channel_col)
     out = df.copy()
@@ -244,25 +252,14 @@ def hrv_over_time(
                     )
                 )
             valid_differences = differences.dropna().to_numpy(float)
-            scale = (
-                np.max(np.abs(valid_differences)) if len(valid_differences) else np.nan
-            )
-            rms = (
-                (
-                    float(scale * np.sqrt(np.mean((valid_differences / scale) ** 2)))
-                    if scale
-                    else 0.0
-                )
-                if len(valid_differences)
-                else float("nan")
-            )
+            n_samples = int(part.notna().sum())
             row = {
                 "window_start_s": start,
-                "n_samples": int(part.notna().sum()),
+                "n_samples": n_samples,
                 "n_pairs": len(valid_differences),
-                "n_beats": int(part.notna().sum()),
+                "n_beats": n_samples,
                 "sdnn": sdnn(part, lo, hi),
-                "rmssd": rms,
+                "rmssd": _rms(valid_differences),
             }
             if channel is not None:
                 row[channel] = identity

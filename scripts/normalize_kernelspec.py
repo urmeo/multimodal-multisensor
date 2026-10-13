@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate portable kernels; update only with --write."""
+"""Check notebook kernel metadata for Python 3; update it with --write."""
 
 from __future__ import annotations
 
@@ -15,7 +15,9 @@ PORTABLE = {"name": "python3", "display_name": "Python 3", "language": "python"}
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__, allow_abbrev=False)
-    parser.add_argument("--write", action="store_true")
+    parser.add_argument(
+        "--write", action="store_true", help="save Python 3 kernel metadata in notebooks"
+    )
     args = parser.parse_args(argv)
     pending = []
     for folder in ("case-study", "individual", "group"):
@@ -30,7 +32,8 @@ def main(argv: list[str] | None = None) -> int:
         for path, notebook in pending:
             nbformat.write(notebook, path)
     print(
-        f"Portable kernels: {len(pending)} changes {'written' if args.write else 'needed'}."
+        f"Python 3 kernel metadata: {len(pending)} notebooks "
+        f"{'updated' if args.write else 'need changes'}."
     )
     return 1 if pending and not args.write else 0
 

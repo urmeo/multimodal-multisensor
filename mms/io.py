@@ -226,7 +226,7 @@ def validate_group_summary(
         raise ValueError(f"unknown group metric {metric!r}")
     if list(frame.columns) != ["Participant", *paths.SESSION_COLUMNS]:
         raise ValueError(
-            "group summary must have Participant and exact Session01–03 columns"
+            "group summary columns must be Participant, Session 01, Session 02, Session 03"
         )
     if (
         len(frame) != 10
@@ -255,14 +255,10 @@ def validate_group_summary(
 def load_group_summary(
     metric: str, *, data_root: str | Path | None = None
 ) -> pd.DataFrame:
-    frame = (
-        _read(paths.resolve_data_root(data_root) / "group_results" / f"{metric}.csv")
-        if metric in paths.GROUP_METRICS
-        else None
-    )
-    if frame is None:
+    if metric not in paths.GROUP_METRICS:
         raise ValueError(
             f"unknown group metric {metric!r}; expected {paths.GROUP_METRICS}"
         )
+    frame = _read(paths.resolve_data_root(data_root) / "group_results" / f"{metric}.csv")
     validate_group_summary(frame, metric)
     return frame

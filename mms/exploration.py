@@ -50,17 +50,9 @@ def recordings(kind, *, source="case-study"):
 
 
 def _real(series, name):
-    if pd.api.types.is_datetime64_any_dtype(
-        series
-    ) or pd.api.types.is_timedelta64_dtype(series):
-        raise ValueError(f"{name} must contain real measurements")
-    if any(
-        isinstance(v, (bool, np.bool_, complex, np.complexfloating)) for v in series
-    ):
-        raise ValueError(f"{name} must contain real measurements")
     try:
-        return pd.to_numeric(series, errors="raise")
-    except (ValueError, TypeError) as error:
+        return hrv._real_series(series, name)
+    except ValueError as error:
         raise ValueError(f"{name} must contain real measurements") from error
 
 
@@ -102,19 +94,21 @@ def hr_summary(streams):
 def interval_summary(streams):
     rows = []
     for label, frame in streams.items():
-        hrv.hrv_rolling(frame, window_beats=30)
+        frame = frame.assign(
+            ibi=hrv._intervals(frame["ibi"], hrv.NN_MIN_MS, hrv.NN_MAX_MS)
+        )
+        if "reltime" in frame:
+            hrv._elapsed(frame["reltime"], "reltime")
         for channel, part in _channels(frame):
-            sample = _real(part["ibi"], "ibi").where(
-                lambda x: np.isfinite(x) & x.between(300, 2000)
-            )
+            sample = part["ibi"]
             rows.append(
                 {
                     "Recording": label,
                     "Channel": channel,
                     "n_samples": int(sample.notna().sum()),
                     "n_pairs": int(sample.diff().notna().sum()),
-                    "Sample SD (ms)": hrv.sdnn(part["ibi"]),
-                    "Adjacent-sample RMS difference (ms)": hrv.rmssd(part["ibi"]),
+                    "Sample SD (ms)": hrv.sdnn(sample),
+                    "Adjacent-sample RMS difference (ms)": hrv.rmssd(sample),
                 }
             )
     return pd.DataFrame(rows)
@@ -129,18 +123,23 @@ def low_movement_events(frame):
 
 
 def closure_candidates(frame):
-    """Exploratory openness <=1, quality >=0.5, duration 0.05–0.5s, gap <=0.1s."""
+    """Both eye-openness values <=1; quality >=0.5, duration 0.05–0.5s, gaps <=0.1s."""
     values = [
         _real(frame[name], name)
         for name in ("leftEyeOpen", "rightEyeOpen", "leftEyeOpenQ", "rightEyeOpenQ")
     ]
-    left, right, lq, rq = values
-    valid = np.isfinite(left) & np.isfinite(right) & np.isfinite(lq) & np.isfinite(rq)
+    left, right, left_quality, right_quality = values
+    valid = (
+        np.isfinite(left)
+        & np.isfinite(right)
+        & np.isfinite(left_quality)
+        & np.isfinite(right_quality)
+    )
     valid &= (
         left.between(0, 10)
         & right.between(0, 10)
-        & lq.between(0.5, 1)
-        & rq.between(0.5, 1)
+        & left_quality.between(0.5, 1)
+        & right_quality.between(0.5, 1)
     )
     closed = (left <= 1) & (right <= 1)
     events = fixation.blink_events(
@@ -277,6 +276,7 @@ def question_features(session, *, source="case-study", sensor_timezone=None):
         )
         for name, frame in (("hr", hr), ("ibi", ibi), ("eye", eye))
     }
+    channels = sorted(set(ibi["iSensor"]) | set(hr["iSensor"]))
     rows = []
     for pos in range(len(questions)):
         item = questions.iloc[pos]
@@ -285,15 +285,16 @@ def question_features(session, *, source="case-study", sensor_timezone=None):
         events = low_movement_events(eye_part)
         complete = events.loc[~events["left_censored"] & ~events["right_censored"]]
         closures, observed = closure_candidates(eye_part)
-        channels = set(ibi["iSensor"]) | set(hr["iSensor"])
-        for channel in sorted(channels):
-            h = hr.loc[selected["hr"].eq(pos).fillna(False) & hr["iSensor"].eq(channel)]
-            b = ibi.loc[
+        for channel in channels:
+            heart = hr.loc[
+                selected["hr"].eq(pos).fillna(False) & hr["iSensor"].eq(channel)
+            ]
+            intervals = ibi.loc[
                 selected["ibi"].eq(pos).fillna(False) & ibi["iSensor"].eq(channel)
             ]
-            hv = _valid_hr(h)
-            bv = _real(b["ibi"], "ibi").where(
-                lambda x: np.isfinite(x) & x.between(300, 2000)
+            heart_samples = _valid_hr(heart)
+            interval_samples = hrv._intervals(
+                intervals["ibi"], hrv.NN_MIN_MS, hrv.NN_MAX_MS
             )
             rows.append(
                 {
@@ -303,12 +304,12 @@ def question_features(session, *, source="case-study", sensor_timezone=None):
                     "Channel": channel,
                     "raw_answer_code": item["Answer"],
                     "response_s": item["Time(s)"],
-                    "n_hr": int(hv.notna().sum()),
-                    "mean_hr_bpm": hv.mean(),
-                    "n_interval_samples": int(bv.notna().sum()),
-                    "n_interval_pairs": int(bv.diff().notna().sum()),
-                    "interval_sd_ms": hrv.sdnn(b["ibi"]),
-                    "interval_rmsdiff_ms": hrv.rmssd(b["ibi"]),
+                    "n_hr": int(heart_samples.notna().sum()),
+                    "mean_hr_bpm": heart_samples.mean(),
+                    "n_interval_samples": int(interval_samples.notna().sum()),
+                    "n_interval_pairs": int(interval_samples.diff().notna().sum()),
+                    "interval_sd_ms": hrv.sdnn(interval_samples),
+                    "interval_rmsdiff_ms": hrv.rmssd(interval_samples),
                     "n_pupil": int(pupils.notna().sum()),
                     "n_complete_low_movement_runs": len(complete),
                     "mean_complete_run_ms": complete["duration_s"].mean() * 1000,
@@ -328,7 +329,8 @@ def aligned_questions(*, source="case-study"):
     zone = os.environ.get("MMS_SENSOR_TIMEZONE") or None
     if zone is None:
         print(
-            "Question/sensor alignment skipped: sensor timezone is undocumented. Set MMS_SENSOR_TIMEZONE only from acquisition metadata."
+            "Question/sensor alignment skipped: the sensor timezone is unknown. "
+            "Set MMS_SENSOR_TIMEZONE from acquisition metadata."
         )
         return pd.DataFrame()
     frames = [
@@ -342,10 +344,14 @@ def interval_spectra(streams):
     result = {}
     frequencies = np.linspace(0.01, 0.5, 500)
     for label, frame in streams.items():
-        hrv.hrv_rolling(frame, window_beats=30)
+        frame = frame.assign(
+            ibi=hrv._intervals(frame["ibi"], hrv.NN_MIN_MS, hrv.NN_MAX_MS)
+        )
+        if "reltime" in frame:
+            hrv._elapsed(frame["reltime"], "reltime")
         for channel, part in _channels(frame):
-            sample = _real(part["ibi"], "ibi")
-            valid = np.isfinite(sample) & sample.between(300, 2000)
+            sample = part["ibi"]
+            valid = sample.notna()
             time = _real(part["reltime"], "reltime")[valid].to_numpy(float)
             values = sample[valid].to_numpy(float)
             if len(values) < 10 or len(np.unique(time)) < 10 or np.ptp(values) == 0:
@@ -474,11 +480,15 @@ def cluster_features(frame, *, n_clusters=3):
 
 
 def synchronized_features(session, *, source="case-study"):
-    """Native timestamp joins only after acquisition clocks are explicitly confirmed."""
+    """Join HR/IBI on exact times, then the latest eye sample within 100 ms.
+
+    Requires a declared sensor timezone and confirmed clock synchronization.
+    """
     zone = os.environ.get("MMS_SENSOR_TIMEZONE")
     if not zone or os.environ.get("MMS_CLOCKS_SYNCHRONIZED") != "1":
         print(
-            "Cross-sensor clustering skipped: declare sensor timezone and confirmed clock synchronization."
+            "Cross-sensor clustering skipped: set MMS_SENSOR_TIMEZONE and "
+            "MMS_CLOCKS_SYNCHRONIZED=1 after confirming the acquisition clocks."
         )
         return pd.DataFrame()
     hr = io.load_hr(session, source=source, data_root=data_root())
@@ -499,9 +509,7 @@ def synchronized_features(session, *, source="case-study"):
             )
         e["pupil"] = fixation.pupil_samples(e, quality_min=0.5)
         h["heart_rate"] = _valid_hr(h)
-        b["ibi"] = _real(b["ibi"], "ibi").where(
-            lambda x: np.isfinite(x) & x.between(300, 2000)
-        )
+        b["ibi"] = hrv._intervals(b["ibi"], hrv.NN_MIN_MS, hrv.NN_MAX_MS)
         base = b[["clock", "ibi"]].merge(
             h[["clock", "heart_rate"]], on="clock", validate="one_to_one"
         )
@@ -667,12 +675,6 @@ def plot_group(frames, *, distribution=False):
 
 def plot_correlations(result):
     r, adjusted = result["r"], result["p_fdr"]
-    annot = np.empty(r.shape, dtype=object)
-    for i in range(len(r)):
-        for j in range(len(r)):
-            p = adjusted.iloc[i, j]
-            mark = "*" if pd.notna(p) and p < 0.05 else ""
-            annot[i, j] = f"{r.iloc[i, j]:.2f}{mark}"
     fig, ax = plt.subplots(figsize=(12, 9))
     image = ax.imshow(r.to_numpy(float), cmap="coolwarm", vmin=-1, vmax=1)
     fig.colorbar(
@@ -687,7 +689,9 @@ def plot_correlations(result):
     for i in range(len(r.index)):
         for j in range(len(r.columns)):
             coefficient = r.iloc[i, j]
-            label = annot[i, j] if pd.notna(coefficient) else "NA"
+            p = adjusted.iloc[i, j]
+            mark = "*" if pd.notna(p) and p < 0.05 else ""
+            label = f"{coefficient:.2f}{mark}" if pd.notna(coefficient) else "NA"
             color = (
                 "white"
                 if pd.notna(coefficient) and abs(coefficient) > 0.65
@@ -697,7 +701,7 @@ def plot_correlations(result):
     method = result["method"].capitalize()
     adjustment = result["adjustment"]
     if adjustment == "none":
-        title = f"Descriptive {method} coefficients; repeated items, p values omitted"
+        title = f"Descriptive {method} coefficients; p values omitted"
     else:
         title = f"{method} correlations, {result['n_tests']} tests; * {adjustment}-adjusted p<0.05"
     ax.set_title(title)

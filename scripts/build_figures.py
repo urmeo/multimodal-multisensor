@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build or verify aggregate figures from unchanged released group tables."""
+"""Check aggregate figures or rebuild them from the released group tables."""
 
 from __future__ import annotations
 
@@ -27,6 +27,12 @@ LABELS = {
     "Pupil_Dilation_STD": "Pupil SD",
     "Psychometric_Test_Duration_STD": "Response-duration SD",
 }
+METHODS = {
+    "icc": "ICC(1,1), finite complete rows, 95% F interval",
+    "correlation": "Spearman, descriptive, no significance stars",
+}
+FIGURE_NAMES = ("reliability.png", "correlation.png")
+OUTPUT_NAMES = (*FIGURE_NAMES, "figures.csv", "figures.toml")
 
 
 def digest(path: Path) -> str:
@@ -79,11 +85,8 @@ def records(rows: list[dict], corr: pd.DataFrame) -> list[dict]:
 
 def verify(output: Path, rows: list[dict], corr: pd.DataFrame, hashes: dict) -> None:
     metadata = tomllib.loads((output / "figures.toml").read_text())
-    if metadata["source"] != hashes or metadata["method"] != {
-        "icc": "ICC(1,1), finite complete rows, 95% F interval",
-        "correlation": "Spearman, descriptive, no significance stars",
-    }:
-        raise ValueError("figure sources or settings differ; regenerate review outputs")
+    if metadata["source"] != hashes or metadata["method"] != METHODS:
+        raise ValueError("figure sources or settings differ; regenerate the figures")
     expected = records(rows, corr)
     with (output / "figures.csv").open(newline="") as stream:
         actual = list(csv.DictReader(stream))
@@ -100,13 +103,10 @@ def verify(output: Path, rows: list[dict], corr: pd.DataFrame, hashes: dict) -> 
             equal_nan=True,
         ):
             raise ValueError("figure values differ")
-    if set(metadata["figure"]) != {"reliability.png", "correlation.png"}:
+    if set(metadata["figure"]) != set(FIGURE_NAMES):
         raise ValueError("figure hash inventory must contain both current PNGs")
     for name, expected_hash in metadata["figure"].items():
-        if (
-            name not in {"reliability.png", "correlation.png"}
-            or digest(output / name) != expected_hash
-        ):
+        if digest(output / name) != expected_hash:
             raise ValueError("figure bytes differ from their recorded hashes")
 
 
@@ -198,18 +198,14 @@ def build(output: Path, rows: list[dict], corr: pd.DataFrame, hashes: dict) -> N
         )
         writer.writeheader()
         writer.writerows(records(rows, corr))
-    metadata = [
-        "[method]",
-        'icc = "ICC(1,1), finite complete rows, 95% F interval"',
-        'correlation = "Spearman, descriptive, no significance stars"',
-        "",
-        "[source]",
-    ]
+    metadata = ["[method]"]
+    metadata += [f'{key} = "{value}"' for key, value in METHODS.items()]
+    metadata += ["", "[source]"]
     metadata += [f'{key} = "{value}"' for key, value in hashes.items()]
     metadata += ["", "[figure]"]
     metadata += [
         f'"{name}" = "{digest(output / name)}"'
-        for name in ("reliability.png", "correlation.png")
+        for name in FIGURE_NAMES
     ]
     (output / "figures.toml").write_text("\n".join(metadata) + "\n")
 
@@ -219,10 +215,14 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--data-root", type=Path)
     group = parser.add_mutually_exclusive_group()
     group.add_argument(
-        "--check", action="store_true", help="read-only verification, default"
+        "--check",
+        action="store_true",
+        help="check saved figures without writing (default)",
     )
     group.add_argument(
-        "--output-root", type=Path, help="explicit separate output directory"
+        "--output-root",
+        type=Path,
+        help="write figures to a directory outside source data",
     )
     args = parser.parse_args(argv)
     try:
@@ -231,12 +231,7 @@ def main(argv: list[str] | None = None) -> int:
             root = paths.resolve_data_root(args.data_root)
             destinations = [
                 paths.output_path(args.output_root, name, data_root=root)
-                for name in (
-                    "reliability.png",
-                    "correlation.png",
-                    "figures.csv",
-                    "figures.toml",
-                )
+                for name in OUTPUT_NAMES
             ]
             output = paths.resolve_output_root(args.output_root, data_root=root)
             if any(destination.parent != output for destination in destinations):
@@ -244,10 +239,13 @@ def main(argv: list[str] | None = None) -> int:
                     "aggregate figure paths must remain in one flat output directory"
                 )
             build(output, rows, corr, hashes)
+            action = "Wrote"
         else:
             verify(ROOT / "outputs", rows, corr, hashes)
+            action = "Verified"
         print(
-            "Verified 3 ICC estimates and 81 descriptive correlations; inputs unchanged."
+            f"{action} aggregate figures: {len(rows)} ICC estimates and "
+            f"{corr.size} descriptive correlations; source inputs unchanged."
         )
         return 0
     except (OSError, ValueError, KeyError, TypeError) as error:

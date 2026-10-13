@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Calendar-shift selected CSV copies with complete validation before writing.
+"""Check calendar timestamps and optionally write shifted CSV copies.
 
-This covers the exact released CSV inventory, including QQ, modified and legacy
-exports. Raw TXT, notebooks, reports, screenshots and photographs are unchanged.
-Each file/clock-awareness domain gets its own origin; no cross-stream alignment
-or anonymity is established. No source file is ever overwritten.
+The inventory includes QQ, modified and legacy exports. Raw TXT, notebooks,
+reports, screenshots and photographs are unchanged. Each file gets separate
+origins for naive and timezone-aware timestamps. This does not align streams
+or establish anonymity. Source files are never overwritten.
 """
 
 from __future__ import annotations
@@ -53,7 +53,7 @@ def time_columns_of(frame: pd.DataFrame) -> dict[str, str]:
 
 
 def collect(data_root: str | Path | None = None) -> tuple[Path, ...]:
-    """Exact 51 source CSVs; generated files are outside this policy."""
+    """Return the 51 released source CSV paths, excluding generated files."""
     root = paths.resolve_data_root(data_root)
     files = tuple(root / name for name in paths.SOURCE_CSV_RELATIVE)
     missing = [str(path.relative_to(root)) for path in files if not path.is_file()]
@@ -127,7 +127,10 @@ def run(
         if output_root is not None
         else []
     )
-    print(f"Validated 51 source CSVs; {len(prepared)} files contain calendar columns.")
+    print(
+        f"Validated {len(paths.SOURCE_CSV_RELATIVE)} source CSVs; "
+        f"{len(prepared)} files contain calendar columns."
+    )
     for relative, _, columns in prepared:
         print(f"{relative}: {len(columns)} calendar columns")
     print(
@@ -144,7 +147,7 @@ def run(
     for (_, shifted, _), destination in zip(prepared, destinations, strict=True):
         destination.parent.mkdir(parents=True, exist_ok=True)
         shifted.to_csv(destination, index=False)
-    print(f"Wrote {len(destinations)} explicit CSV copies; source inputs unchanged.")
+    print(f"Wrote {len(destinations)} CSV copies; source inputs unchanged.")
     return 0
 
 
@@ -153,16 +156,20 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument(
         "--data-root",
         type=Path,
-        help="folder containing case-study/individual/group_results",
+        help="directory containing case-study, individual and group_results",
     )
     parser.add_argument(
-        "--naive-timezone", help="explicit documented timezone for naive source clocks"
+        "--naive-timezone",
+        help="documented timezone to assign to naive source timestamps",
     )
     parser.add_argument(
         "--apply", action="store_true", help="write copies only with --output-root"
     )
     parser.add_argument(
-        "--output-root", "--out", type=Path, help="separate explicit output directory"
+        "--output-root",
+        "--out",
+        type=Path,
+        help="write copies to a directory outside source data",
     )
     args = parser.parse_args(argv)
     if args.apply and args.output_root is None:
