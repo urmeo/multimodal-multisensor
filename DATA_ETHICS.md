@@ -2,11 +2,11 @@
 
 ## Recorded consent
 
-The author states that all 10 adults gave written informed consent, including later open sharing for research and education and withdrawal without penalty. This authored account is retained; the repository does not independently establish every consent or review record.
+The author states that all 10 adults gave written informed consent. This account includes later open sharing for research and education and withdrawal without penalty. The repository retains that account but does not independently verify every consent or review record.
 
-The thesis describes an earlier team-only protocol. The poster proposes a CER submission, without evidence of approval granted. No approval identifier is recorded here. GDPR and French data-protection law are the author's stated framework, rather than proof of institutional approval or independently verified compliance.
+The thesis describes an earlier protocol limited to the research team. The poster proposes a CER submission; it does not document approval. No approval identifier is recorded here. The author names GDPR and French data-protection law as the governing framework. That statement does not establish institutional approval or independently verified compliance.
 
-Recognizable session photographs have explicit consent described in the thesis, PDF page 46, printed 49, Annexes E/F. Photo consent is separate from tabular pseudonymization and questionnaire copyright.
+The thesis describes explicit consent for recognizable session photographs in Annexes E/F, PDF page 46, printed page 49. Photo consent is separate from the use of participant codes in tables and from questionnaire copyright.
 
 ## Actual release scope
 
@@ -17,7 +17,7 @@ Recognizable session photographs have explicit consent described in the thesis, 
 | Notebooks, PDFs and screenshots | Dates, device labels and context |
 | Session photographs | Consented recognizable people |
 
-Participant codes reduce naming in tables; they do not establish anonymity or make this entire release identifier-free. Two distinct raw folders are present; the individual folder's participant mapping is undocumented. Eye/cardiac records are available; GSR and facial outputs are absent.
+Tables use participant codes instead of names. The release still contains identifying information and is not anonymous. The two raw-data folders contain distinct files; the individual folder's participant mapping is undocumented. Eye and cardiac records are available. GSR and facial outputs are absent.
 
 ## Timestamp copies
 
@@ -26,12 +26,14 @@ python -m scripts.deidentify_timestamps
 python -m scripts.deidentify_timestamps --output-root /tmp/mms-time-copies
 ```
 
-The tool validates all 51 CSVs before writing. It copies calendar-bearing CSVs only, shifting each file/clock domain to a relative calendar anchor. Raw TXT, notebooks, reports, media and non-time CSVs remain unchanged. Source files are never overwritten; malformed nonempty dates fail. Logs omit original dates and offsets.
+The first command validates all 51 CSVs without writing files. Adding `--output-root` writes copies of CSVs that contain calendar timestamps. Dates shift to a fixed calendar anchor separately for each file and compatible clock domain. Raw TXT, notebooks, reports, media and CSVs without calendar timestamps are not copied or changed.
 
-File-local shifts preserve compatible within-file differences, not unestablished cross-stream synchronization. Copies retain sensitive responses and measurements; they are not an anonymous release.
+The tool validates every CSV before writing any copies. It never overwrites source files and rejects malformed nonempty dates. Logs omit original dates and offsets.
+
+Shifting dates within a file preserves differences between compatible timestamps in that file. It does not establish synchronization across streams. The copies still contain sensitive responses and measurements; they are not anonymous.
 
 ## Use and contact
 
 - Retain attribution and comply with [data terms](DATA_LICENSE.md), consent limits and [instrument rights](NOTICE.md). Do not reidentify participants or make individual decisions from these records.
 - Report identifying evidence privately through [Security](https://github.com/urmeo/Multimodal-Multisensor/security/advisories/new). Public reproducibility issues should use synthetic examples.
-- Data-subject access, correction, erasure and objection requests go to recorded controller urme, [@urmeo](https://github.com/urmeo), through a private channel.
+- Send data-subject access, correction, erasure and objection requests to the recorded controller, urme ([@urmeo](https://github.com/urmeo)), through a private channel.

@@ -2,30 +2,41 @@
 
 ## Recording figures
 
-The README plots use `data/case-study/raw/hr_01.txt`, `ibi_01.txt` and `sed_01.txt` directly. Heart rate retains finite positive readings with confidence 1; intervals retain finite positive repeated samples; pupils retain finite positive readings with `0.5 < pupilQ <= 1`. Channels stay separate; time is recording-relative seconds, without cross-stream alignment. Units are reported bpm, ms and mm, with calibration and unique-beat provenance unverified.
+The [heart-rate](../outputs/recorded-heart.png), [interval](../outputs/recorded-interval.png) and [pupil](../outputs/recorded-pupil.png) plots use `data/case-study/raw/hr_01.txt`, `ibi_01.txt` and `sed_01.txt` directly. They describe the available samples from session 1.
+
+Heart rate retains finite positive readings with confidence 1. Intervals retain finite positive readings, including repeated samples. Pupils retain finite positive readings with `0.5 < pupilQ <= 1`. Channels stay separate. Each stream uses its own recording-relative time in seconds; clocks are not aligned across streams. Reported units are bpm, ms and mm. Calibration and unique-beat provenance are unverified.
 
 ```sh
 python -m scripts.build_recording_figures --check
 python -m scripts.build_recording_figures --output-root outputs
 ```
 
-`outputs/recording-figures.toml` binds source hashes, exact selected values, filters, units, counts and image hashes. Check mode writes nothing. The three plots describe available samples; they do not establish anxiety categories or validate the ten-person group tables.
+`outputs/recording-figures.toml` records source hashes, a hash of the exact selected values, filters, units, counts and image hashes. Check mode writes nothing. These plots do not establish anxiety categories or validate the ten-person group tables.
 
-`images/data_collection_session.jpg` is the original photograph in thesis PDF page 46, printed 49, Annex E, explicitly captioned with photo consent. Source bytes are unchanged.
+The [session photograph](../images/data_collection_session.jpg) appears in thesis Annex E, PDF page 46, printed page 49. Its caption explicitly records photo consent. The [experimental setup photograph](../images/experimental_setup.jpg) is also preserved. Source image bytes are unchanged.
 
 ## Historical group-summary calculations
 
-`outputs/reliability.png` and `outputs/correlation.png` use the unchanged three group tables. ICC(1,1) has 95% F intervals; correlations are Spearman over ten participant rows, without significance stars. Most group rows cannot be traced to available raw recordings; these calculations are archival, not independently verified cohort measurements. No new participant profiles are published.
+The README's [reliability plot](../outputs/reliability.png) and the [correlation plot](../outputs/correlation.png) use the three unchanged group tables. ICC(1,1) estimates have 95% confidence intervals calculated from the F distribution. Spearman correlations use ten participant rows and show no significance stars.
 
-`outputs/figures.csv` records values; `outputs/figures.toml` records source hashes, method and figure hashes. Regenerate explicitly with `python scripts/build_figures.py --output-root outputs`; verify with `--check`. Package version 1.0.1 is a maintenance identifier, without a new dataset release claim.
+Most group rows cannot be traced to the available raw recordings. The calculations reproduce the released tables; they do not independently verify the cohort measurements. No new participant profiles are published.
+
+`outputs/figures.csv` records calculated values. `outputs/figures.toml` records source hashes, methods and figure hashes. Run these commands from the repository root:
+
+```sh
+python -m scripts.build_figures --check
+python -m scripts.build_figures --output-root outputs
+```
+
+Package version 1.0.1 identifies maintenance work; it does not mark a new dataset release.
 
 ## Historical snapshots
 
-Original images retain exact bytes from source snapshot `d5374f6f09c6940be1906491ea213b73417827fa`. Moved plots are in one flat `outputs/` folder; photographs/screenshots remain in `images/`. Acquisition/settings hashes for these older images are unavailable.
+Original images retain their exact bytes from source snapshot `d5374f6f09c6940be1906491ea213b73417827fa`. Moved plots are in `outputs/`; photographs and screenshots remain in `images/`. Acquisition and settings hashes are unavailable for these older images.
 
-- The former README heatmap shows interval S1/S2=0.03 and interval S1/pupil S3=0.85. The separately released Spearman image shows 0.55 and 0.48; method/snapshot drift prevents treating them as interchangeable.
-- The silhouette figure peaks at k=2 while the cluster display uses k=3. Those historical images do not establish anxiety categories, validated participant clusters or PCA-before-clustering.
-- Timing, pupil, fixation and scoring screenshots retain their historical labels and source values; unsupported clinical cutoffs and mixed units are excluded from current results.
+- The former README heatmap shows interval S1/S2 = 0.03 and interval S1/pupil S3 = 0.85. The separately released Spearman image shows 0.55 and 0.48. Differences in methods or source snapshots prevent treating the images as interchangeable.
+- The silhouette figure peaks at k = 2, while the cluster display uses k = 3. These historical images do not establish anxiety categories or validated participant clusters. They also do not establish that PCA preceded clustering.
+- Timing, pupil, fixation and scoring screenshots retain their historical labels and source values. Current results exclude unsupported clinical cutoffs and mixed units.
 
 | Original path | Preserved file | SHA256 |
 | :--- | :--- | :--- |
