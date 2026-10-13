@@ -1,5 +1,7 @@
 # Security
 
-- **Supported:** current `main`; local code and notebooks.
-- **Report privately:** [Report a vulnerability](https://github.com/urmeo/multimodal-multisensor/security/advisories/new). Include affected file, reproduction and impact using synthetic data.
-- **Participant privacy:** include identifying evidence only in the private report. Dates, device labels and consented photos remain; see [scope](DATA_ETHICS.md).
+Security fixes apply to local code and notebooks on the current `main` branch.
+
+[Report a vulnerability privately](https://github.com/urmeo/multimodal-multisensor/security/advisories/new). Include the affected file, steps to reproduce and impact. Use synthetic data for reproduction steps.
+
+Include identifying evidence only in the private report. The release contains dates, device labels and consented photographs. See [DATA_ETHICS.md](DATA_ETHICS.md) for the full scope.

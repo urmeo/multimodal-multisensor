@@ -1,18 +1,39 @@
 # Contributing
 
-- Install Python 3.11 or 3.12 with `python -m pip install -e '.[dev]'`. Run `python -m pytest tests -q` and `python -m scripts.build_group_summaries --check`.
-- Run notebooks with `python scripts/verify_notebooks.py`; it copies inputs to a temporary workspace and exports separately. Preserve observations and reports; use synthetic regression cases.
-- Describe the changed method, command and expected result. Keep units, clocks, [rights](NOTICE.md) and [consent](DATA_ETHICS.md) explicit.
+Use Python 3.11 or 3.12. Run these commands from the repository root:
+
+```sh
+python -m pip install -e '.[dev]'
+python -m pytest tests -q
+python -m scripts.build_group_summaries --check
+python -m scripts.build_figures --check
+python -m scripts.build_recording_figures --check
+```
+
+Describe the method you changed, the command you ran and the expected result. Keep units, clock assumptions, [material rights](NOTICE.md) and [consent limits](DATA_ETHICS.md) explicit. Preserve source observations and historical reports. Use synthetic data for regression tests and public issue reports.
+
+## Notebooks and outputs
+
+Run `python scripts/verify_notebooks.py` to execute all 33 notebooks. It copies the notebooks and data to a temporary workspace, directs exports to a separate directory and checks that both copies and original inputs stay unchanged. The temporary workspace is removed when the command finishes.
+
+For interactive use, install `python -m pip install -e '.[notebooks]'` and run `jupyter lab notebooks`.
+
+The notebook helpers use these environment variables:
+
+| Variable | Purpose |
+| :--- | :--- |
+| `MMS_DATA_ROOT` | Directory containing `case-study`, `individual` and `group_results`; defaults to the checkout's `data/` directory |
+| `MMS_OUTPUT_ROOT` | Separate directory for generated tables and figures; without it, notebook helpers skip exports |
+| `MMS_SENSOR_TIMEZONE` | Documented acquisition timezone for sensor timestamps without an offset; required before joining them to UTC question times |
+| `MMS_CLOCKS_SYNCHRONIZED` | Set to `1` only when acquisition metadata confirms clock synchronization; also required for cross-sensor clustering |
+
+Command-line scripts use their explicit `--data-root` and `--output-root` options. Output directories must be separate from source data. A timezone declaration alone does not establish synchronized clocks.
 
 ## Hashed environment
 
-The lock targets **CPython 3.11, x86_64 GNU/Linux**. It pins distributions, without promising identical runtime behavior across platforms.
+The lock file targets CPython 3.11 on x86_64 GNU/Linux. It pins distributions and their hashes; runtime behavior may still vary across platforms.
 
 ```sh
 python -m pip install --require-hashes -r requirements.lock
 python -m pip install -e . --no-deps
 ```
-
-## Notebooks
-
-`MMS_DATA_ROOT` selects data; `MMS_OUTPUT_ROOT` selects a separate scratch directory. Without an output root, helpers do not write. `MMS_SENSOR_TIMEZONE` requires documented acquisition metadata before joining naive clocks to UTC questions.
