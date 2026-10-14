@@ -2,7 +2,7 @@
 
 Python analysis of eye, cardiac and questionnaire data from 10 adults across three weekly sessions. The code checks recordings, measures within-session variation and compares session summaries.
 
-![Project pipeline: check recordings and released group tables, calculate descriptive summaries and session statistics, then produce plots and tables. Clock-dependent analyses are optional.](images/pipeline.svg)
+![Project pipeline: recordings and released group tables are checked and analysed separately, producing plots and tables. Clock-dependent recording analysis is optional.](images/pipeline.svg)
 
 The repository contains 51 CSV files, 24 raw sensor streams and 33 Jupyter notebooks. Eye and cardiac recordings are available. GSR collection was attempted; facial integration was unfinished.
 
