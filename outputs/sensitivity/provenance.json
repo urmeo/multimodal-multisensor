@@ -1,0 +1,40 @@
+{
+  "source_sha256": {
+    "data/group_results/HRV_SDNN.csv": "df7e4ab294a7aed7118bb8e2c757280632673c10eb08e351a5b0cd6c280552e7",
+    "data/group_results/Pupil_Dilation_STD.csv": "c3811f388f6366f0d2fe56833e231f4ae96effcfca00e764507f5e1ea0c34f6f",
+    "data/group_results/Psychometric_Test_Duration_STD.csv": "e080aa3949c2cae3974d309bba5a60c9fed89847ccc82252ff9c1eef9a2c4abe",
+    "docs/reports/Multimodal Multisensor Technical Report.pdf": "607603c01c123c99fa1dc84ad82ef0a531a39f993cebe5d6ac5e6f572c117718"
+  },
+  "settings": {
+    "candidate_cell": {
+      "metric": "HRV_SDNN",
+      "participant": "P01",
+      "session": "Session 03"
+    },
+    "report_candidate": 1012.69,
+    "report_pdf_page_1based": 6,
+    "candidate_status": "unverified rounded report value; not a source correction",
+    "scenarios": {
+      "released": "all released values, n=10",
+      "report_candidate": "change only the candidate cell in a copy, n=10",
+      "omit_p01": "omit P01 from all three tables, n=9"
+    },
+    "icc": "ICC(1,1), finite complete rows, 95% F interval",
+    "correlations": "Spearman; BH across all 36 unique pairs per scenario",
+    "omnibus": "Friedman; Holm across all three metrics per scenario",
+    "paired": "two-sided Wilcoxon; Holm across all nine session pairs per scenario",
+    "change_intervals": "paired t 95% intervals in source units; d_z uses difference SD",
+    "limits": "Sensitivity only; original export and verified NN-beat provenance unavailable"
+  },
+  "environment": {
+    "python": "3.12.13",
+    "numpy": "2.5.4",
+    "pandas": "2.3.3",
+    "scipy": "1.18.1",
+    "matplotlib": "3.11.2"
+  },
+  "source_modified": false,
+  "figure_sha256": {
+    "sensitivity.png": "b0f00da22b0458cd4b6506db767dc2806c99effb84b90c4171129dedbcb63f8a"
+  }
+}
