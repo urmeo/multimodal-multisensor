@@ -3,7 +3,7 @@
 Use Python 3.11 or 3.12. Run these commands from the repository root:
 
 ```sh
-python -m pip install -e '.[dev]'
+python -m pip install -e '.[dev,docs]'
 python -m pytest tests -q
 python -m scripts.build_group_summaries --check
 python -m scripts.build_figures --check
@@ -37,3 +37,15 @@ The lock file targets CPython 3.11 on x86_64 GNU/Linux. It pins distributions an
 python -m pip install --require-hashes -r requirements.lock
 python -m pip install -e . --no-deps
 ```
+
+## Documentation site
+
+The site uses the repository's Markdown files, figures and reports. Build it locally with:
+
+```sh
+python -m pip install -e '.[docs]'
+python scripts/build_docs.py
+python -m http.server 8000 --directory build/docs
+```
+
+Open `http://localhost:8000`. The build checks local page and asset links. Notebooks, code and data links open their source files on GitHub. The Verify workflow publishes to GitHub Pages after all checks pass on `main`.

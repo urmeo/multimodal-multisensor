@@ -1,6 +1,6 @@
 # Report status
 
-Original PDFs are preserved byte for byte. Locations below refer to PDF pages, with printed page numbers where they differ. Use the current code and tables for reproducible calculations, and read the source gaps below alongside the historical reports.
+The PDF copies retain their exact bytes from the reviewed release baseline `a369ee0dc2dcac24feaa9e2e1faf160c39d5a3de`. That pre-existing commit revised the thesis and poster files. Locations below refer to PDF pages, with printed page numbers where they differ. Use the current code and tables for reproducible calculations, and read the source gaps below alongside the historical reports.
 
 | Report | Status |
 | :--- | :--- |

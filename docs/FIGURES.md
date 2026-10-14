@@ -32,7 +32,7 @@ Package version 1.0.1 identifies maintenance work; it does not mark a new datase
 
 ## Historical snapshots
 
-Original images retain their exact bytes from source snapshot `d5374f6f09c6940be1906491ea213b73417827fa`. Moved plots are in `outputs/`; photographs and screenshots remain in `images/`. Acquisition and settings hashes are unavailable for these older images.
+Historical images retain their exact bytes from the reviewed release baseline `a369ee0dc2dcac24feaa9e2e1faf160c39d5a3de`. Plots are in `outputs/`; photographs and screenshots remain in `images/`. The recruitment image was revised in that pre-existing commit; its hash below identifies the revised file. Acquisition and settings hashes are unavailable for these older images.
 
 - The former README heatmap shows interval S1/S2 = 0.03 and interval S1/pupil S3 = 0.85. The separately released Spearman image shows 0.55 and 0.48. Differences in methods or source snapshots prevent treating the images as interchangeable.
 - The silhouette figure peaks at k = 2, while the cluster display uses k = 3. These historical images do not establish anxiety categories or validated participant clusters. They also do not establish that PCA preceded clustering.
@@ -47,7 +47,7 @@ Original images retain their exact bytes from source snapshot `d5374f6f09c6940be
 | `images/Group Eye.png` | [Group Eye.png](../outputs/Group%20Eye.png) | `ebc749f826e8c7ac18c5ad4bc4c539cae5dd2382936dd7e13f66a1f0732ab1a9` |
 | `images/Group SD.png` | [Group SD.png](../outputs/Group%20SD.png) | `ab1e51352ec1776eeaa7e781114044b38b00bd1285a6a5f970298628bdfb4d8f` |
 | `images/Psychometric Test dataset.png` | [Psychometric Test dataset.png](../images/Psychometric%20Test%20dataset.png) | `ed404ec4253e4b3606bd54548ee2cc5b23c2d9faaf2a23ede7f148e9005d032c` |
-| `images/Recruitment ads.jpg` | [Recruitment ads.jpg](../images/Recruitment%20ads.jpg) | `d825b6f5768061ad9873c569f93978f9da87a9182551f32411e856caf774960b` |
+| `images/Recruitment ads.jpg` | [Recruitment ads.jpg](../images/Recruitment%20ads.jpg) | `70d49eaaa3fa4859224a453be9dc008ba036f0df737864a362e8b9276855b839` |
 | `images/Standard Deviation of HRV (SDNN).png` | [Standard Deviation of HRV (SDNN).png](../outputs/Standard%20Deviation%20of%20HRV%20%28SDNN%29.png) | `2ab6d8445a4a965b426450f78d7bc9e342ffdceec05ff6b010317b830f284f01` |
 | `images/Standard Deviation of Pupil Dilation.png` | [Standard Deviation of Pupil Dilation.png](../outputs/Standard%20Deviation%20of%20Pupil%20Dilation.png) | `3549bc8c2eb315ce32d276166273b7c8ea3450c79e95e2d908a7f837f502d65d` |
 | `images/Thales Human Performance Monitoring for Data Collection.png` | [Thales Human Performance Monitoring for Data Collection.png](../images/Thales%20Human%20Performance%20Monitoring%20for%20Data%20Collection.png) | `8a843ac588877aab005f5b4de6e44e1b536e572ffd53c5670c50eaf62b4f5583` |
