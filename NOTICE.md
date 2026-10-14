@@ -8,4 +8,4 @@
 | Participant data and figures | [Data terms](DATA_LICENSE.md), with [consent](DATA_ETHICS.md) |
 | Illustrative photos/report graphics | Author or source rights; the thesis records consent for recognizable session photos |
 
-Repository licenses do not establish permission to republish protected wording or translations. The original item text remains as source evidence. Its presence does not grant permission to reuse it. Establish the historical questionnaire versions and response coding before scoring.
+Original item text remains as source evidence. Repository licenses do not grant permission to republish protected wording or translations. Establish the historical questionnaire versions and response coding before scoring.

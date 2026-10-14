@@ -14,7 +14,7 @@ Describe the method you changed, the command you ran and the expected result. Ke
 
 ## Notebooks and outputs
 
-Run `python scripts/verify_notebooks.py` to execute all 33 notebooks. It copies the notebooks and data to a temporary workspace, directs exports to a separate directory and checks that both copies and original inputs stay unchanged. The temporary workspace is removed when the command finishes.
+Run `python scripts/verify_notebooks.py` to execute all 33 notebooks. It copies the notebooks and data to a temporary workspace, directs exports to a separate directory and checks that both copies and original inputs stay unchanged.
 
 For interactive use, install `python -m pip install -e '.[notebooks]'` and run `jupyter lab notebooks`.
 

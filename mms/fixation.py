@@ -1,4 +1,4 @@
-"""Quality-filtered pupil samples and descriptive, explicitly bounded event runs."""
+"""Pupil filtering and bounded eye-event candidates."""
 
 from __future__ import annotations
 

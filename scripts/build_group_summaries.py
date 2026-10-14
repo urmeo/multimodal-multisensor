@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
-"""Compare the historical calculation with released group row P02.
+"""Compare pooled sample SDs with released group row P02.
 
-For the released data, pooled sample SDs agree with P02 within set tolerances.
 This comparison does not establish participant identity or NN-beat provenance.
 Optional outputs report filtered sample variability separately for each channel.
 """
