@@ -38,6 +38,7 @@ jobs:
       - run: python -m scripts.build_group_summaries --check
       - run: python scripts/build_figures.py --check
       - run: python -m scripts.build_recording_figures --check
+      - run: python -m scripts.build_group_sensitivity --check
       - run: python scripts/verify_notebooks.py
 
   locked:
@@ -55,6 +56,7 @@ jobs:
       - run: python -m scripts.build_group_summaries --check
       - run: python scripts/build_figures.py --check
       - run: python -m scripts.build_recording_figures --check
+      - run: python -m scripts.build_group_sensitivity --check
 
   docs:
     name: Build and check documentation
