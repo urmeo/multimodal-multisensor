@@ -1,5 +1,3 @@
-"""Shared loaders, sample metrics, events and statistics."""
-
 from __future__ import annotations
 
 from . import fixation, hrv, io, paths, stats

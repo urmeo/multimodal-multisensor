@@ -53,5 +53,3 @@ Read the [documentation site](https://urmeo.github.io/multimodal-multisensor/) f
 The original [technical report](docs/reports/Multimodal%20Multisensor%20Technical%20Report.pdf), [thesis](docs/reports/Thesis%20Report.pdf) and [proposed protocol](docs/reports/CYPSY_Poster.pdf) are preserved. Read the [report corrections](docs/REPORT_STATUS.md) alongside them.
 
 The author records consent for sharing and session photographs. Dates, device labels, responses and recognizable photos remain in the release; participant codes do not make it anonymous. Review the [consent account](DATA_ETHICS.md), [data terms](DATA_LICENSE.md) and [questionnaire rights](NOTICE.md) before reuse. Code and notebooks use the [MIT license](LICENSE). Cite the data using [CITATION.cff](CITATION.cff).
-
-Related repositories: [Sensor](https://github.com/urmeo/sensor), [Psychometric](https://github.com/urmeo/psychometric) and [CalmSense](https://github.com/urmeo/calm-sense).

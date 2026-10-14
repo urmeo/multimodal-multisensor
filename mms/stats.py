@@ -1,4 +1,4 @@
-"""Finite complete-case ICC and explicitly scoped multiple-comparison statistics."""
+"""ICC, correlations and multiple-comparison adjustments."""
 
 from __future__ import annotations
 

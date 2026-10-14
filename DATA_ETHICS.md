@@ -2,7 +2,7 @@
 
 ## Recorded consent
 
-The author states that all 10 adults gave written informed consent. This account includes later open sharing for research and education and withdrawal without penalty. The repository retains that account but does not independently verify every consent or review record.
+The author states that all 10 adults gave written informed consent. This account includes later open sharing for research and education and withdrawal without penalty. Not every consent or review record is independently verified.
 
 The thesis describes an earlier protocol limited to the research team. The poster proposes a CER submission; it does not document approval. No approval identifier is recorded here. The author names GDPR and French data-protection law as the governing framework. That statement does not establish institutional approval or independently verified compliance.
 

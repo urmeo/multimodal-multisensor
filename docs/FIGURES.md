@@ -19,7 +19,7 @@ The [session photograph](../images/data_collection_session.jpg) appears in thesi
 
 The README's [reliability plot](../outputs/reliability.png) and the [correlation plot](../outputs/correlation.png) use the three unchanged group tables. ICC(1,1) estimates have 95% confidence intervals calculated from the F distribution. Spearman correlations use ten participant rows and show no significance stars.
 
-Most group rows cannot be traced to the available raw recordings. The calculations reproduce the released tables; they do not independently verify the cohort measurements. No new participant profiles are published.
+Most group rows cannot be traced to the available raw recordings. The calculations reproduce the released tables; they do not independently verify the cohort measurements.
 
 `outputs/figures.csv` records calculated values. `outputs/figures.toml` records source hashes, methods and figure hashes. Run these commands from the repository root:
 
@@ -27,8 +27,6 @@ Most group rows cannot be traced to the available raw recordings. The calculatio
 python -m scripts.build_figures --check
 python -m scripts.build_figures --output-root outputs
 ```
-
-Package version 1.0.1 identifies maintenance work; it does not mark a new dataset release.
 
 ## Historical snapshots
 

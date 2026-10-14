@@ -109,7 +109,7 @@ def _groups(df: pd.DataFrame, channel_col: str | None):
 
 
 def clean_nn(ibi, lo: float = NN_MIN_MS, hi: float = NN_MAX_MS) -> pd.Series:
-    """Return in-range interval samples; the name is retained for compatibility."""
+    """Return in-range interval samples."""
     return _intervals(ibi, lo, hi).dropna()
 
 
