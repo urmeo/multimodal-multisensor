@@ -15,7 +15,7 @@ Use Python 3.11 or 3.12. From a clone of this repository:
 ```sh
 python -m venv .venv
 source .venv/bin/activate
-python -m pip install -e '.[dev,notebooks]'
+python -m pip install -e '.[dev,notebooks,docs]'
 python -m pytest tests -q
 python -m scripts.build_group_summaries --check
 python -m scripts.build_figures --check
@@ -47,6 +47,8 @@ These calculations describe the released tables. The small sample and wide inter
 The [data provenance](DATA_PROVENANCE.md) describes schemas, units, source gaps and reconciliation tolerances. The [figure notes](docs/FIGURES.md) record source hashes, filters and historical images, including photographs of the experimental setup.
 
 ## Documentation and data use
+
+Read the [documentation site](https://urmeo.github.io/multimodal-multisensor/) for the workflow, figures and data notes.
 
 The original [technical report](docs/reports/Multimodal%20Multisensor%20Technical%20Report.pdf), [thesis](docs/reports/Thesis%20Report.pdf) and [proposed protocol](docs/reports/CYPSY_Poster.pdf) are preserved. Read the [report corrections](docs/REPORT_STATUS.md) alongside them.
 
