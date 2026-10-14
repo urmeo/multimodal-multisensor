@@ -12,7 +12,7 @@ The PDF copies retain their exact bytes from the reviewed release baseline `a369
 
 | Location | Correction or unresolved issue |
 | :--- | :--- |
-| Technical p3 | The report's eye-open threshold above 1 conflicts with the old code's closure threshold at or below 1. Units and polarity need confirmation. Current blink output uses a stated heuristic that requires observed reopening and handles gaps. Gaze distance was not angular velocity. |
+| Technical p3 | The report counts openness values above 1 as closed; the code counts values at or below 1 as closed. Units and polarity are unverified. Current outputs are heuristic candidates that require observed reopening and handle gaps. Gaze distance was not angular velocity. |
 | Technical p6 | P01 S3 interval SD is 1012.69 in the report and 65.39 in the CSV. The original raw source is unavailable. Both values are preserved; the discrepancy is unresolved. |
 | Technical p8 to 11 | Claims about agreement at k = 3, PCA before clustering, HADS validation and stable traits exceed the code evidence. The case study clusters timestamp samples from one person. It does not validate clinical or participant categories. |
 | Thesis p25, printed 28 | Some p values exceed 1; values shown as 0.00 are rounded. Recovering lost exponents and precision requires the original statistical output. No replacement values are supplied. |
@@ -20,6 +20,27 @@ The PDF copies retain their exact bytes from the reviewed release baseline `a369
 | Thesis p4 to 5, printed 7 to 8 | The protocol limits access to the research team. It differs from the author's later account of consent for sharing. No review identifier is independently established. |
 | Thesis p46, printed 49 | Annexes E/F explicitly record photo consent. |
 | Poster | The poster gives a target of 10 participants, expected results and a planned CER submission. Its Tobii/Empatica equipment, PHQ/ACEs instruments and age range of 18 to 30 differ from later methods. It does not document approval or measured results. |
+
+## Cardiac sensitivity
+
+The original P01 S3 export is absent from the released files and Git history. The sensitivity analysis compares the released value, the report's printed value and omission of P01 from all three group tables.
+
+| Scenario | Participants | ICC(1,1) of interval-sample SD | 95% interval |
+| :--- | ---: | ---: | :--- |
+| Released CSV: P01 S3 = 65.3938 | 10 | 0.221 | −0.131 to 0.659 |
+| Report candidate: P01 S3 = 1012.69 | 10 | 0.038 | −0.253 to 0.509 |
+| Omit P01 from all metrics | 9 | 0.216 | −0.150 to 0.680 |
+
+![Cardiac ICC intervals and session correlations for the three sensitivity scenarios](../outputs/sensitivity/sensitivity.png)
+
+The report value is rounded and unverified. Neither alternative establishes the correct value. Released tables remain unchanged. Substitution changes eight of 36 Spearman correlations, with a maximum absolute change of 0.109. Pupil and response-duration ICCs remain unchanged in that scenario. Participant omission changes all three metrics' estimates.
+
+[ICC results](../outputs/sensitivity/icc.csv) · [Correlations](../outputs/sensitivity/correlations.csv) · [Omnibus tests](../outputs/sensitivity/omnibus.csv) · [Paired tests](../outputs/sensitivity/paired.csv) · [Sources and settings](../outputs/sensitivity/provenance.json)
+
+```sh
+python -m scripts.build_group_sensitivity --check
+python -m scripts.build_group_sensitivity --output-root /tmp/mms-sensitivity
+```
 
 ## Bibliography
 
