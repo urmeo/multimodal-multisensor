@@ -1,0 +1,21 @@
+flowchart LR
+  subgraph recordings["Available recordings"]
+    direction LR
+    R["Eye + cardiac samples<br/>Raw answers + response times"] --> RC["Check values, time and quality<br/>Keep channels and gaps"]
+    RC --> RA["Sample metrics<br/>Eye-event candidates<br/>Response statistics"]
+    RA --> RO["Traces + distributions<br/>Event plots + tables"]
+  end
+  subgraph group["Released group tables · 10 adults × 3 sessions"]
+    direction LR
+    G["Interval, pupil and duration SD"] --> GC["Validate participant/session rows<br/>Check known repeats"]
+    GC --> GA["ICC + Spearman + paired tests<br/>P01 sensitivity"]
+    GA --> GO["95% reliability intervals<br/>Correlations + sensitivity plots/tables"]
+  end
+  LIMIT["Most group rows lack raw-data mappings.<br/>Missing clocks block question summaries, sensor joins and cross-sensor clusters.<br/>Question summaries need a verified timezone; joins and clusters also need confirmed sync.<br/>Eye events are candidates; interval samples are not verified unique beats."]
+  VERIFY["Verify tests, 33 notebooks and source hashes.<br/>Preserve source files. Results are descriptive."]
+  classDef input fill:#1b2327,stroke:#9eafb8,color:#d5dce0;
+  classDef analysis fill:#1b2327,stroke:#50b4d0,color:#d5dce0;
+  classDef limit fill:#1b2327,stroke:#d97d70,color:#d5dce0,stroke-dasharray:6 4;
+  class R,G,RO,GO input;
+  class RC,RA,GC,GA,VERIFY analysis;
+  class LIMIT limit;
