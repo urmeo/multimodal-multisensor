@@ -1,81 +1,94 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="836" viewBox="0 0 1280 836" role="img" aria-labelledby="pipeline-title pipeline-description" font-family="Arial, Helvetica, sans-serif">
-  <title id="pipeline-title">Project pipeline: data, analysis and figures</title>
-  <desc id="pipeline-description">Two independent data paths. Eye and cardiac recordings, raw questionnaire answers and response times are checked for values, timing and quality, then summarized as samples and candidate eye events. Released group tables contain ten adults across three sessions. Their rows and known repeats are checked before ICC, Spearman correlations, paired tests and exploratory duration clustering. Both paths produce plots and tables. Most group rows cannot be rebuilt from available recordings. Optional question summaries require acquisition timezone metadata; sensor joins and clustering also require confirmed clock synchronization. K-means uses standardized features, and PCA supplies a display. Tests, all 33 notebooks and source hashes check the analyses. Outputs use separate files, preserving source data. Results are descriptive; eye events and clusters are exploratory.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="1040" viewBox="0 0 1440 1040" role="img" aria-labelledby="pipeline-title pipeline-description" font-family="Arial, Helvetica, sans-serif">
+  <title id="pipeline-title">Project pipeline: inputs, checks, analysis and outputs</title>
+  <desc id="pipeline-description">Two independent paths. Available eye and cardiac recordings and raw questionnaire responses are checked for values, time and quality, then summarized into sample metrics, eye-event candidates and response statistics. They produce traces, distributions, event plots and tables. Released group tables contain interval, pupil and response-duration standard deviations for ten adults across three sessions. Their participant and session rows and known repeats are checked before ICC, Spearman correlations, paired tests and the separate P01 sensitivity analysis. They produce reliability intervals, a correlation heatmap and sensitivity plots and tables. Most group rows cannot be rebuilt from available recordings. Clock-dependent question summaries need a verified timezone; sensor joins and exploratory clusters additionally need confirmed synchronization. Those metadata are unavailable. Tests, all 33 notebooks and source hashes verify the analyses. Source files are preserved. Results are descriptive; eye events and clusters are unvalidated. Cardiac samples are not verified unique beats.</desc>
   <defs>
     <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto" markerUnits="userSpaceOnUse">
-      <path d="M0 0L10 5L0 10Z" fill="#55C4E0"/>
+      <path d="M0 0L10 5L0 10Z" fill="#50B4D0"/>
     </marker>
     <style>
-      .title { fill: #E7EDED; font-size: 32px; font-weight: 600; }
-      .subtitle { fill: #B8C5CC; font-size: 21px; }
-      .stage { fill: #A8B5BD; font-size: 17px; font-weight: 600; letter-spacing: 1px; }
-      .card { fill: #1B2327; stroke: #667A85; stroke-width: 1.5; }
-      .analysis { stroke: #55C4E0; }
-      .heading { fill: #E7EDED; font-size: 26px; font-weight: 600; }
-      .body { fill: #B8C5CC; font-size: 22px; }
-      .note { fill: #A8B5BD; font-size: 19px; }
-      .flow { fill: none; stroke: #55C4E0; stroke-width: 2.5; marker-end: url(#arrow); }
+      .title { fill: #D5DCE0; font-size: 32px; font-weight: 700; }
+      .subtitle { fill: #A6B6BF; font-size: 22px; }
+      .stage { fill: #A6B6BF; font-size: 18px; font-weight: 700; letter-spacing: 1px; }
+      .lane { fill: #50B4D0; font-size: 18px; font-weight: 700; letter-spacing: 1px; }
+      .card { fill: #1B2327; stroke: #A6B6BF; stroke-width: 1.6; }
+      .analysis { stroke: #50B4D0; stroke-width: 2; }
+      .heading { fill: #D5DCE0; font-size: 25px; font-weight: 700; }
+      .body { fill: #A6B6BF; font-size: 22px; }
+      .note { fill: #A6B6BF; font-size: 20px; }
+      .flow { fill: none; stroke: #50B4D0; stroke-width: 2.5; marker-end: url(#arrow); }
     </style>
   </defs>
 
-  <rect width="1280" height="836" fill="#14191C"/>
-  <text x="48" y="52" class="title">PROJECT PIPELINE</text>
-  <text x="48" y="86" class="subtitle">Recordings and released group tables follow separate paths.</text>
-  <path d="M48 108H1232" stroke="#45545D" stroke-width="1.5"/>
+  <rect width="1440" height="1040" fill="#14191C"/>
+  <text x="40" y="60" class="title">PROJECT PIPELINE</text>
+  <text x="40" y="96" class="subtitle">Recordings and released group tables enter separately.</text>
+  <path d="M40 122H1400" stroke="#A6B6BF" stroke-width="1.5"/>
 
-  <text x="48" y="138" class="stage">01  DATA</text>
-  <text x="462" y="138" class="stage">02  CHECK + ANALYSE</text>
-  <text x="876" y="138" class="stage">03  PLOTS + TABLES</text>
+  <text x="40" y="164" class="stage">01  INPUTS</text>
+  <text x="394" y="164" class="stage">02  CHECK</text>
+  <text x="748" y="164" class="stage">03  ANALYSE</text>
+  <text x="1102" y="164" class="stage">04  OUTPUTS</text>
 
-  <!-- Recording path. -->
-  <rect x="48" y="158" width="356" height="160" rx="8" class="card"/>
-  <text x="70" y="196" class="heading">Recordings + responses</text>
-  <text x="70" y="238" class="body">Eye + cardiac readings</text>
-  <text x="70" y="268" class="body">Raw answers + response times</text>
+  <text x="40" y="204" class="lane">AVAILABLE RECORDINGS</text>
+  <rect x="40" y="224" width="298" height="180" rx="8" class="card"/>
+  <text x="62" y="262" class="heading">Source data</text>
+  <text x="62" y="308" class="body">Eye + cardiac samples</text>
+  <text x="62" y="340" class="body">Answers + response times</text>
 
-  <rect x="462" y="158" width="356" height="160" rx="8" class="card analysis"/>
-  <text x="484" y="196" class="heading">Summarize recordings</text>
-  <text x="484" y="238" class="body">Check values, time + quality</text>
-  <text x="484" y="268" class="body">Keep channels + interval gaps</text>
-  <text x="484" y="298" class="body">Metrics + eye-event candidates</text>
+  <rect x="394" y="224" width="298" height="180" rx="8" class="card analysis"/>
+  <text x="416" y="262" class="heading">Screen samples</text>
+  <text x="416" y="308" class="body">Values · time · quality</text>
+  <text x="416" y="340" class="body">Keep channels + gaps</text>
 
-  <rect x="876" y="158" width="356" height="160" rx="8" class="card"/>
-  <text x="898" y="196" class="heading">Recording outputs</text>
-  <text x="898" y="238" class="body">Traces + distributions</text>
-  <text x="898" y="268" class="body">Event plots + response tables</text>
-  <path d="M414 238H452" class="flow"/>
-  <path d="M828 238H866" class="flow"/>
+  <rect x="748" y="224" width="298" height="180" rx="8" class="card analysis"/>
+  <text x="770" y="262" class="heading">Summarize samples</text>
+  <text x="770" y="308" class="body">Sample metrics</text>
+  <text x="770" y="340" class="body">Eye-event candidates</text>
+  <text x="770" y="372" class="body">Response statistics</text>
 
-  <!-- Group tables enter independently of the recording path. -->
-  <rect x="48" y="352" width="356" height="160" rx="8" class="card"/>
-  <text x="70" y="390" class="heading">Released group tables</text>
-  <text x="70" y="432" class="body">10 adults × 3 sessions</text>
-  <text x="70" y="462" class="body">Interval, pupil + response</text>
-  <text x="70" y="492" class="body">Standard deviations</text>
+  <rect x="1102" y="224" width="298" height="180" rx="8" class="card"/>
+  <text x="1124" y="262" class="heading">Recording results</text>
+  <text x="1124" y="308" class="body">Traces + distributions</text>
+  <text x="1124" y="340" class="body">Event plots + tables</text>
+  <path d="M348 314H384" class="flow"/>
+  <path d="M702 314H738" class="flow"/>
+  <path d="M1056 314H1092" class="flow"/>
 
-  <rect x="462" y="352" width="356" height="160" rx="8" class="card analysis"/>
-  <text x="484" y="390" class="heading">Compare sessions</text>
-  <text x="484" y="432" class="body">Check rows + known repeats</text>
-  <text x="484" y="462" class="body">ICC, Spearman + paired tests</text>
-  <text x="484" y="492" class="body">Explore duration clusters</text>
+  <text x="40" y="456" class="lane">RELEASED GROUP TABLES</text>
+  <rect x="40" y="476" width="298" height="180" rx="8" class="card"/>
+  <text x="62" y="514" class="heading">Group summaries</text>
+  <text x="62" y="560" class="body">10 adults × 3 sessions</text>
+  <text x="62" y="592" class="body">Interval · pupil · duration</text>
+  <text x="62" y="624" class="body">Within-session SD</text>
 
-  <rect x="876" y="352" width="356" height="160" rx="8" class="card"/>
-  <text x="898" y="390" class="heading">Group outputs</text>
-  <text x="898" y="432" class="body">Reliability + 95% intervals</text>
-  <text x="898" y="462" class="body">Correlation heatmap + tables</text>
-  <path d="M414 432H452" class="flow"/>
-  <path d="M828 432H866" class="flow"/>
+  <rect x="394" y="476" width="298" height="180" rx="8" class="card analysis"/>
+  <text x="416" y="514" class="heading">Validate tables</text>
+  <text x="416" y="560" class="body">Participant + session rows</text>
+  <text x="416" y="592" class="body">Known repeats</text>
 
-  <text x="48" y="546" class="note">Most group rows cannot be rebuilt from the released recordings.</text>
+  <rect x="748" y="476" width="298" height="180" rx="8" class="card analysis"/>
+  <text x="770" y="514" class="heading">Compare sessions</text>
+  <text x="770" y="560" class="body">ICC + Spearman</text>
+  <text x="770" y="592" class="body">Paired tests</text>
+  <text x="770" y="624" class="body">P01 sensitivity</text>
 
-  <!-- These are separate metadata requirements, not consecutive steps. -->
-  <rect x="48" y="574" width="1184" height="112" rx="8" fill="#1B2327" stroke="#F08B79" stroke-width="1.5"/>
-  <text x="70" y="604" fill="#F08B79" font-size="20" font-weight="600">OPTIONAL · REQUIRES ACQUISITION CLOCK METADATA</text>
-  <text x="70" y="638" class="subtitle">Known timezone → question summaries</text>
-  <text x="70" y="668" class="subtitle">Known timezone + confirmed clock sync → sensor joins + exploratory clusters</text>
-  <text x="48" y="718" class="note">Clustering uses standardized features. PCA is only for display.</text>
+  <rect x="1102" y="476" width="298" height="180" rx="8" class="card"/>
+  <text x="1124" y="514" class="heading">Group results</text>
+  <text x="1124" y="560" class="body">Reliability intervals (95%)</text>
+  <text x="1124" y="592" class="body">Correlation heatmap</text>
+  <text x="1124" y="624" class="body">Sensitivity plots + tables</text>
+  <path d="M348 566H384" class="flow"/>
+  <path d="M702 566H738" class="flow"/>
+  <path d="M1056 566H1092" class="flow"/>
 
-  <rect x="48" y="744" width="1184" height="72" rx="8" fill="#1B2327" stroke="#45545D" stroke-width="1"/>
-  <text x="70" y="771" fill="#E7EDED" font-size="22" font-weight="600">Verify: tests + all 33 notebooks + source hashes</text>
-  <text x="70" y="795" class="note">Export separate files and preserve the source data.</text>
+  <text x="40" y="696" class="note">Most group rows cannot be rebuilt from the available recordings.</text>
+
+  <rect x="40" y="736" width="1360" height="148" rx="8" fill="#1B2327" stroke="#D97D70" stroke-width="1.8" stroke-dasharray="8 6"/>
+  <text x="64" y="772" fill="#D97D70" font-size="18" font-weight="700" letter-spacing="1">CLOCK-DEPENDENT WORK · METADATA UNAVAILABLE</text>
+  <text x="64" y="814" class="body">Verified timezone → question summaries</text>
+  <text x="64" y="852" class="body">Verified timezone + clock sync → sensor joins + exploratory clusters</text>
+
+  <rect x="40" y="916" width="1360" height="88" rx="8" fill="#1B2327" stroke="#46555E" stroke-width="1.5"/>
+  <text x="64" y="950" fill="#D5DCE0" font-size="23" font-weight="700">Verify tests · 33 notebooks · source hashes</text>
+  <text x="64" y="984" class="note">Preserve source files. Results are descriptive; event candidates and clusters are unvalidated.</text>
 </svg>
