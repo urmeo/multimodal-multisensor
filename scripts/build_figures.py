@@ -17,10 +17,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
 from mms import io, paths, stats  # noqa: E402
 
-ROOT = Path(__file__).resolve().parents[1]
 SESSIONS = list(paths.SESSION_COLUMNS)
 LABELS = {
     "HRV_SDNN": "Interval-sample SD",
