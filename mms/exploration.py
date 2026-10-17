@@ -235,7 +235,10 @@ def duration_summary(frame):
 
 
 def assign_questions(sample_times, questions, *, sensor_timezone=None):
-    """Assign samples to [start, answer) intervals; unknown sensor zones fail closed."""
+    """Assign samples to [start, answer) intervals on a caller-verified common clock.
+
+    sensor_timezone localizes naive timestamps; it does not establish clock sync.
+    """
     io.validate_psychometric(questions)
     time = io.parse_datetime(sample_times, naive_timezone=sensor_timezone)
     start = io.parse_datetime(questions["Question Start Time"])
@@ -265,7 +268,10 @@ def assign_questions(sample_times, questions, *, sensor_timezone=None):
 
 
 def question_features(session, *, source="case-study", sensor_timezone=None):
-    """Per-question/channel descriptive features and coverage; no scale score."""
+    """Summarize each question/channel on a caller-verified common clock.
+
+    sensor_timezone localizes naive timestamps; it does not establish clock sync.
+    """
     questions = io.load_psychometric(session, source=source, data_root=data_root())
     raw_answer_summary(questions)
     hr = io.load_hr(session, source=source, data_root=data_root())
@@ -326,12 +332,12 @@ def question_features(session, *, source="case-study", sensor_timezone=None):
 
 
 def aligned_questions(*, source="case-study"):
-    """Opt in through documented acquisition metadata, never a timezone guess."""
+    """Require the caller to declare a documented timezone and confirmed clock sync."""
     zone = os.environ.get("MMS_SENSOR_TIMEZONE") or None
-    if zone is None:
+    if zone is None or os.environ.get("MMS_CLOCKS_SYNCHRONIZED") != "1":
         print(
-            "Question/sensor alignment skipped: the sensor timezone is unknown. "
-            "Set MMS_SENSOR_TIMEZONE from acquisition metadata."
+            "Question/sensor alignment skipped: set MMS_SENSOR_TIMEZONE and "
+            "MMS_CLOCKS_SYNCHRONIZED=1 after confirming the acquisition clocks."
         )
         return pd.DataFrame()
     frames = [
