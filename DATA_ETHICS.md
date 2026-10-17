@@ -35,5 +35,5 @@ Shifting dates within a file preserves differences between compatible timestamps
 ## Use and contact
 
 - Retain attribution and comply with [data terms](DATA_LICENSE.md), consent limits and [instrument rights](NOTICE.md). Do not reidentify participants or make individual decisions from these records.
-- Report identifying evidence privately through [Security](https://github.com/urmeo/Multimodal-Multisensor/security/advisories/new). Public reproducibility issues should use synthetic examples.
+- Report identifying evidence privately through [Security](https://github.com/urmeo/multimodal-multisensor/security/advisories/new). Public reproducibility issues should use synthetic examples.
 - Send data-subject access, correction, erasure and objection requests to the recorded controller, urme ([@urmeo](https://github.com/urmeo)), through a private channel.

@@ -5,7 +5,7 @@ title: "Multimodal-Multisensor: Eye, Cardiac and Questionnaire Recordings Across
 authors:
   - given-names: "urme"
 version: 1.0.1
-url: "https://github.com/urmeo/Multimodal-Multisensor"
+url: "https://github.com/urmeo/multimodal-multisensor"
 keywords:
   - recordings
   - sessions
