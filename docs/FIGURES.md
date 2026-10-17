@@ -30,7 +30,7 @@ python -m scripts.build_figures --output-root outputs
 
 ## Historical snapshots
 
-Historical images retain their exact bytes from the reviewed release baseline `a369ee0dc2dcac24feaa9e2e1faf160c39d5a3de`. Plots are in `outputs/`; photographs and screenshots remain in `images/`. The recruitment image was revised in that pre-existing commit; its hash below identifies the revised file. Acquisition and settings hashes are unavailable for these older images.
+Historical images retain their bytes from release baseline `a369ee0dc2dcac24feaa9e2e1faf160c39d5a3de`. Plots are in `outputs/`; photographs and screenshots are in `images/`. The baseline revised the recruitment image; its hash below identifies that file. Acquisition and settings hashes are unavailable for these images.
 
 - The former README heatmap shows interval S1/S2 = 0.03 and interval S1/pupil S3 = 0.85. The separately released Spearman image shows 0.55 and 0.48. Differences in methods or source snapshots prevent treating the images as interchangeable.
 - The silhouette figure peaks at k = 2, while the cluster display uses k = 3. These historical images do not establish anxiety categories or validated participant clusters. They also do not establish that PCA preceded clustering.

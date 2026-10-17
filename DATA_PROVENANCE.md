@@ -10,7 +10,7 @@
 | `data/*/psychometric` | Item responses and question timestamps | 88 items per current session; original wording is retained |
 | `data/group_results` | 3 tables, P01 to P10, 3 sessions | Released values; raw source mappings are unavailable for most rows |
 
-The release contains 51 CSV files, 24 raw TXT files and 33 notebooks. Suffixes `01`, `02` and `03` identify sessions. Unsuffixed streams supply one baseline per modality, which analyses reuse. Three independent baselines are not documented.
+The dataset contains 51 CSV files and 24 raw TXT files. Suffixes `01`, `02` and `03` identify sessions. Unsuffixed streams supply one baseline per modality, which analyses reuse. Three independent baselines are not documented.
 
 ## Schemas and units
 
@@ -43,7 +43,7 @@ python -m scripts.build_group_summaries --check
 python -m scripts.build_group_summaries --output-root /tmp/mms-review
 ```
 
-The legacy calculation takes standard deviations of pooled raw samples without filtering. It is numerically consistent with P02; this does not independently prove participant identity. With `rtol=0`, the absolute tolerances are `1e-9` for interval/pupil SD and `3e-5` seconds for duration SD. These tolerances cover known rounding drift. A mismatch outside them returns exit code 1. Check mode writes nothing.
+The legacy calculation takes standard deviations of pooled, unfiltered raw samples. Its numerical match to P02 does not establish participant identity. With `rtol=0`, absolute tolerances of `1e-9` for interval/pupil SD and `3e-5` seconds for duration SD allow known rounding drift. A mismatch returns exit code 1. Check mode writes nothing.
 
 Review outputs include filtered sample metrics for each channel and hashes of the sources and settings. They do not replace the group values or establish unique-beat provenance. Invalid readings affect legacy variance. A variance spike alone does not establish clinical meaning.
 

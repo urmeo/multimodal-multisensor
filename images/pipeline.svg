@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1440" height="1040" viewBox="0 0 1440 1040" role="img" aria-labelledby="pipeline-title pipeline-description" font-family="Arial, Helvetica, sans-serif">
   <title id="pipeline-title">Project pipeline: inputs, checks, analysis and outputs</title>
-  <desc id="pipeline-description">Two independent paths. Available eye and cardiac recordings and raw questionnaire responses are checked for values, time and quality, then summarized into sample metrics, eye-event candidates and response statistics. They produce traces, distributions, event plots and tables. Released group tables contain interval, pupil and response-duration standard deviations for ten adults across three sessions. Their participant and session rows and known repeats are checked before ICC, Spearman correlations, paired tests and the separate P01 sensitivity analysis. They produce reliability intervals, a correlation heatmap and sensitivity plots and tables. Most group rows cannot be rebuilt from available recordings. Clock-dependent question summaries need a verified timezone; sensor joins and exploratory clusters additionally need confirmed synchronization. Those metadata are unavailable. Tests, all 33 notebooks and source hashes verify the analyses. Source files are preserved. Results are descriptive; eye events and clusters are unvalidated. Cardiac samples are not verified unique beats.</desc>
+  <desc id="pipeline-description">Eye, cardiac and questionnaire recordings are checked and summarized into plots and tables. Released group tables enter separately for session comparisons and P01 sensitivity analysis. Most group rows lack raw-data mappings. Clock-dependent work is blocked by missing metadata. Tests, notebooks and source hashes verify outputs without changing sources. Results are descriptive; events and clusters are unvalidated. Interval samples are not verified unique beats.</desc>
   <defs>
     <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto" markerUnits="userSpaceOnUse">
       <path d="M0 0L10 5L0 10Z" fill="#50B4D0"/>
@@ -89,6 +89,6 @@
   <text x="64" y="852" class="body">Verified timezone + clock sync → sensor joins + exploratory clusters</text>
 
   <rect x="40" y="916" width="1360" height="88" rx="8" fill="#1B2327" stroke="#46555E" stroke-width="1.5"/>
-  <text x="64" y="950" fill="#D5DCE0" font-size="23" font-weight="700">Verify tests · 33 notebooks · source hashes</text>
+  <text x="64" y="950" fill="#D5DCE0" font-size="23" font-weight="700">Verify tests · all notebooks · source hashes</text>
   <text x="64" y="984" class="note">Preserve source files. Results are descriptive; event candidates and clusters are unvalidated.</text>
 </svg>

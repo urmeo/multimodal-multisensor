@@ -1,6 +1,6 @@
 # Report status
 
-The PDF copies retain their exact bytes from the reviewed release baseline `a369ee0dc2dcac24feaa9e2e1faf160c39d5a3de`. That pre-existing commit revised the thesis and poster files. Locations below refer to PDF pages, with printed page numbers where they differ. Use the current code and tables for reproducible calculations, and read the source gaps below alongside the historical reports.
+The PDFs retain their bytes from release baseline `a369ee0dc2dcac24feaa9e2e1faf160c39d5a3de`, which revised the thesis and poster. Locations use PDF pages, with printed page numbers where they differ. Use the current code and tables for reproducible calculations; the source gaps below limit interpretation of the historical reports.
 
 | Report | Status |
 | :--- | :--- |
@@ -48,7 +48,7 @@ The Green/Harlow eye-tracking attribution to *Journal of Anxiety Disorders 73:10
 
 ## Current evidence
 
-- **ICC(1,1):** the group tables give estimates of 0.22, 0.45 and 0.61, with wide 95% confidence intervals. They do not validate anxiety diagnoses or stable traits.
+- **Interpretation:** the group estimates have wide confidence intervals. They do not validate anxiety diagnoses or stable traits.
 - **Sample units:** cardiac records contain repeated interval samples without timing for verified unique normal heartbeats. Group response-duration values are within-session standard deviations in seconds.
 - **Source gaps:** equal-value patterns, missing clock metadata and undocumented participant mapping limit independent reconstruction.
 

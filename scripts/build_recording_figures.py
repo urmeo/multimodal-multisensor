@@ -19,10 +19,10 @@ import numpy as np
 import pandas as pd
 from matplotlib import font_manager
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
 from mms import io, paths  # noqa: E402
 
-ROOT = Path(__file__).resolve().parents[1]
 NAMES = ("hr", "ibi", "sed")
 COLORS = ("#183b62", "#16888c", "#b05d38")
 FIGURE_NAMES = ("recorded-heart.png", "recorded-interval.png", "recorded-pupil.png")

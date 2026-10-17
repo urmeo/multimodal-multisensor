@@ -8,13 +8,14 @@ python -m pytest tests -q
 python -m scripts.build_group_summaries --check
 python -m scripts.build_figures --check
 python -m scripts.build_recording_figures --check
+python -m scripts.build_group_sensitivity --check
 ```
 
 Describe the method you changed, the command you ran and the expected result. Keep units, clock assumptions, [material rights](NOTICE.md) and [consent limits](DATA_ETHICS.md) explicit. Preserve source observations and historical reports. Use synthetic data for regression tests and public issue reports.
 
 ## Notebooks and outputs
 
-Run `python scripts/verify_notebooks.py` to execute all 33 notebooks. It copies the notebooks and data to a temporary workspace, directs exports to a separate directory and checks that both copies and original inputs stay unchanged.
+Run `python scripts/verify_notebooks.py` to execute all notebooks in a temporary workspace. It exports to a separate directory and checks that copied and original inputs stay unchanged.
 
 For interactive use, install `python -m pip install -e '.[notebooks]'` and run `jupyter lab notebooks`.
 
