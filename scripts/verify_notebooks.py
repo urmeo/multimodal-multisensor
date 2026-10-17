@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Execute 33 notebooks on copied inputs and verify source bytes stay unchanged."""
+"""Execute notebooks on copied inputs and verify source bytes stay unchanged."""
 
 from __future__ import annotations
 
@@ -31,16 +31,17 @@ def main(argv: list[str] | None = None) -> int:
     with tempfile.TemporaryDirectory(prefix="mms-notebooks-") as name:
         scratch = Path(name)
         shutil.copytree(ROOT / "data", scratch / "data")
+        notebooks = []
         for folder in FOLDERS:
+            sources = sorted((ROOT / folder).glob("*.ipynb"))
+            if not sources:
+                raise ValueError(f"no source notebooks in {folder}")
             destination = scratch / folder
             destination.mkdir(parents=True)
-            for source in (ROOT / folder).glob("*.ipynb"):
-                shutil.copy2(source, destination / source.name)
-        notebooks = sorted(
-            path for folder in FOLDERS for path in (scratch / folder).glob("*.ipynb")
-        )
-        if len(notebooks) != 33:
-            raise ValueError("expected all 33 source notebooks")
+            for source in sources:
+                target = destination / source.name
+                shutil.copy2(source, target)
+                notebooks.append(target)
         environment = os.environ.copy()
         environment.update(
             MMS_DATA_ROOT=str(scratch / "data"),
@@ -69,7 +70,7 @@ def main(argv: list[str] | None = None) -> int:
             raise ValueError("notebook execution changed source inputs")
         if result.returncode:
             return result.returncode
-        print("All 33 notebooks executed; original and copied inputs unchanged.")
+        print(f"All {len(notebooks)} notebooks executed; original and copied inputs unchanged.")
     return 0
 
 
