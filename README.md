@@ -6,7 +6,7 @@ Python analysis of eye, cardiac and questionnaire data from 10 adults across thr
 
 [View full size](images/pipeline.svg) · [Edit in Figma](https://www.figma.com/board/hexcUfwWED4MIu7wjxmWrU/) · [Design files](design/README.md)
 
-The repository includes 51 source CSV files, 24 raw sensor streams and 33 Jupyter notebooks. Eye and cardiac recordings are available. GSR collection was attempted; facial integration was unfinished.
+The repository includes 51 source CSV files, 24 raw sensor streams and 22 Jupyter notebooks. Eye and cardiac recordings are available. GSR collection was attempted; facial integration was unfinished.
 
 The shared `mms` package uses NumPy, pandas and SciPy for analysis, Matplotlib for plots and scikit-learn for exploratory clustering. The questionnaires include HADS, STAI-S, STAI-T, BFI-10 and the Fear Questionnaire.
 
@@ -25,7 +25,7 @@ python -m scripts.build_recording_figures --check
 python -m scripts.build_group_sensitivity --check
 ```
 
-The `--check` commands read the source data without writing files. To inspect the notebooks, run `jupyter lab notebooks`. They are organized into [case study](notebooks/case-study), [group](notebooks/group) and [individual](notebooks/individual) analyses. Run `python scripts/verify_notebooks.py` to execute all 33 in a temporary workspace and check that their inputs stay unchanged.
+The `--check` commands read source data without writing files. Open the [case study](notebooks/case-study), [group](notebooks/group) and [individual](notebooks/individual) notebooks with `jupyter lab notebooks`. Run `python scripts/verify_notebooks.py` to execute them in a temporary workspace and check that inputs stay unchanged.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for output settings and the hashed Linux environment. Installed wheels contain code only; use a repository checkout for the included data and notebooks.
 
@@ -51,7 +51,7 @@ The [data provenance](DATA_PROVENANCE.md) describes schemas, units, source gaps 
 
 ## Documentation and data use
 
-Read the [documentation site](https://urmeo.github.io/multimodal-multisensor/) for the workflow, figures and data notes.
+[Browse the documentation](https://urmeo.github.io/multimodal-multisensor/) for the workflow, figures and data notes.
 
 The original [technical report](docs/reports/Multimodal%20Multisensor%20Technical%20Report.pdf), [thesis](docs/reports/Thesis%20Report.pdf) and [proposed protocol](docs/reports/CYPSY_Poster.pdf) are preserved. Read the [report corrections](docs/REPORT_STATUS.md) alongside them.
 
