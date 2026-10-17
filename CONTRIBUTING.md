@@ -25,10 +25,10 @@ The notebook helpers use these environment variables:
 | :--- | :--- |
 | `MMS_DATA_ROOT` | Directory containing `case-study`, `individual` and `group_results`; defaults to the checkout's `data/` directory |
 | `MMS_OUTPUT_ROOT` | Separate directory for generated tables and figures; without it, notebook helpers skip exports |
-| `MMS_SENSOR_TIMEZONE` | Documented acquisition timezone for sensor timestamps without an offset; required before joining them to UTC question times |
-| `MMS_CLOCKS_SYNCHRONIZED` | Set to `1` only when acquisition metadata confirms clock synchronization; also required for cross-sensor clustering |
+| `MMS_SENSOR_TIMEZONE` | Documented acquisition timezone for sensor timestamps without an offset |
+| `MMS_CLOCKS_SYNCHRONIZED` | Set to `1` only when acquisition records confirm synchronization of the streams being joined |
 
-Command-line scripts use their explicit `--data-root` and `--output-root` options. Output directories must be separate from source data. A timezone declaration alone does not establish synchronized clocks.
+Command-line scripts use their explicit `--data-root` and `--output-root` options. Output directories must be separate from source data. Question-aligned summaries and cross-sensor features require both clock settings. The released recordings lack timezone and synchronization metadata, so these steps remain skipped.
 
 ## Hashed environment
 

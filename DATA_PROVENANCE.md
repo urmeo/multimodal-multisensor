@@ -26,7 +26,7 @@ The dataset contains 51 CSV files and 24 raw TXT files. Suffixes `01`, `02` and 
 | `fixation`, `fixation_id`, `duration` | Historical sample annotations; current event tables give one row per run, duration in seconds, gap/quality handling and censoring status |
 | `sdnn`, `rmssd` | Historical names; current interval-sample calculations use 30-sample windows and 29 internal adjacent differences |
 | `Time(s)` | Response duration in seconds for current question exports |
-| `Question Start Time`, `Question Answer Time` | Question interval boundaries; joins use these intervals rather than the nearest start time and require an explicit clock mapping |
+| `Question Start Time`, `Question Answer Time` | Question interval boundaries; joins use these intervals rather than the nearest start time and require a documented timezone and confirmed clock synchronization |
 
 Current questionnaire exports contain 14 HADS items, 20 STAI-S items, 20 STAI-T items, 10 BFI items and 24 FQ items. Scoring requires a separate specification of `Answer` coding, reverse-scored items and the historical questionnaire versions. The notebooks do not assign diagnostic categories.
 
@@ -58,7 +58,7 @@ Equal values do not prove copying. Tests check the exact participant IDs, values
 
 ## Clocks and outputs
 
-- Preserve whether timestamps include a timezone. Question joins require acquisition-zone metadata; `MMS_SENSOR_TIMEZONE` supplies a documented mapping. Cross-sensor clustering also requires `MMS_CLOCKS_SYNCHRONIZED=1` after synchronization is confirmed.
+- Preserve whether timestamps include a timezone. Question-aligned summaries and cross-sensor features require both a documented acquisition timezone (`MMS_SENSOR_TIMEZONE`) and synchronization confirmed by acquisition records (`MMS_CLOCKS_SYNCHRONIZED=1`). Neither is available for the released recordings, so these steps remain skipped.
 - Notebook helpers use `MMS_OUTPUT_ROOT` for exports outside source data. Without it, they skip exports. `MMS_DATA_ROOT` selects a directory containing `case-study`, `individual` and `group_results`; command-line scripts use explicit root options.
 - Wheels contain code only. Loaders accept `data_root=` for a separately obtained dataset and report an error when required files are missing.
 
