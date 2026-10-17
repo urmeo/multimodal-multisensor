@@ -18,10 +18,10 @@ import numpy as np
 import pandas as pd
 import scipy
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
 from mms import exploration, io, paths, stats  # noqa: E402
 
-ROOT = Path(__file__).resolve().parents[1]
 REPORT = ROOT / "docs/reports/Multimodal Multisensor Technical Report.pdf"
 METRIC = "HRV_SDNN"
 REPORT_VALUE = 1012.69
@@ -41,12 +41,11 @@ def digest(path: Path) -> str:
 def scenarios(frames: dict[str, pd.DataFrame]) -> dict:
     copies = {
         name: {metric: frame.copy(deep=True) for metric, frame in frames.items()}
-        for name in SCENARIO_LABELS
+        for name in ("released", "report_candidate")
     }
     copies["report_candidate"][METRIC].loc["P01", "Session 03"] = REPORT_VALUE
     copies["omit_p01"] = {
-        metric: frame.drop(index="P01")
-        for metric, frame in copies["omit_p01"].items()
+        metric: frame.drop(index="P01") for metric, frame in frames.items()
     }
     return copies
 

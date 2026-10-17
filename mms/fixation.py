@@ -80,42 +80,43 @@ def contiguous_events(
     """
     time_series = _real_series(time, "time").reset_index(drop=True)
     _elapsed(time_series, "time")
-    t = time_series.to_numpy()
-    flags, mask_valid = _mask(mask, "mask", len(t))
-    good, valid_known = (
-        _mask(valid, "valid", len(t))
-        if valid is not None
-        else (np.ones(len(t), dtype=bool), np.ones(len(t), dtype=bool))
-    )
-    good &= valid_known & mask_valid
+    times = time_series.to_numpy()
+    n_samples = len(times)
+    qualifying, valid_rows = _mask(mask, "mask", n_samples)
+    if valid is not None:
+        supplied_valid, valid_known = _mask(valid, "valid", n_samples)
+        valid_rows &= supplied_valid & valid_known
     gap = _gap(max_gap_s)
-    breaks = np.zeros(len(t), dtype=bool)
-    if gap is not None and len(t) > 1:
-        breaks[1:] = _time_differences(t) > gap
+    breaks = np.zeros(n_samples, dtype=bool)
+    if gap is not None and n_samples > 1:
+        breaks[1:] = _time_differences(times) > gap
     rows: list[dict[str, object]] = []
     start = None
     left_censored = False
-    for position in range(len(t) + 1):
-        active = position < len(t) and good[position] and flags[position]
-        interrupted = position < len(t) and breaks[position]
+    for position in range(n_samples + 1):
+        active = position < n_samples and valid_rows[position] and qualifying[position]
+        interrupted = position < n_samples and breaks[position]
         if start is not None and (not active or interrupted):
             last = position - 1
-            if position == len(t):
+            if position == n_samples:
                 end_reason = "recording_end"
             elif interrupted:
                 end_reason = "gap"
-            elif not good[position]:
+            elif not valid_rows[position]:
                 end_reason = "invalid"
             else:
                 end_reason = "transition"
-            a = t[start].item() if isinstance(t[start], np.generic) else t[start]
-            b = t[last].item() if isinstance(t[last], np.generic) else t[last]
+            start_time, end_time = times[start], times[last]
+            start_time = (
+                start_time.item() if isinstance(start_time, np.generic) else start_time
+            )
+            end_time = end_time.item() if isinstance(end_time, np.generic) else end_time
             rows.append(
                 {
                     "event_id": len(rows) + 1,
-                    "start_s": a,
-                    "end_s": b,
-                    "duration_s": float(b - a),
+                    "start_s": start_time,
+                    "end_s": end_time,
+                    "duration_s": float(end_time - start_time),
                     "n_samples": last - start + 1,
                     "start_pos": start,
                     "end_pos": last,
@@ -127,7 +128,9 @@ def contiguous_events(
             start = None
         if active and start is None:
             start = position
-            left_censored = position == 0 or interrupted or not good[position - 1]
+            left_censored = (
+                position == 0 or interrupted or not valid_rows[position - 1]
+            )
     result = pd.DataFrame(rows, columns=_EVENT_COLUMNS).astype(
         {
             "event_id": "int64",

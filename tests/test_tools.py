@@ -10,9 +10,22 @@ from pathlib import Path
 
 import pytest
 
-from scripts import build_figures
+from scripts import build_figures, verify_notebooks
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+@pytest.mark.parametrize("missing", verify_notebooks.FOLDERS)
+def test_notebook_verifier_rejects_an_empty_analysis_folder(tmp_path, monkeypatch, missing):
+    (tmp_path / "data").mkdir()
+    for folder in verify_notebooks.FOLDERS:
+        destination = tmp_path / folder
+        destination.mkdir(parents=True)
+        if folder != missing:
+            (destination / "example.ipynb").write_text("{}")
+    monkeypatch.setattr(verify_notebooks, "ROOT", tmp_path)
+    with pytest.raises(ValueError, match="no source notebooks"):
+        verify_notebooks.main([])
 
 
 @pytest.mark.parametrize(

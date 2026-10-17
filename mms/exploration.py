@@ -189,22 +189,22 @@ def raw_answer_summary(frame):
     io.validate_psychometric(frame)
     if frame["Type"].isna().any() or set(frame["Type"]) != set(EXPECTED_ITEMS):
         raise ValueError("expected the five declared instruments")
-    ids = frame["Test"].astype(str).str.extract(r"^\s*(\d+)\.")[0]
-    if ids.isna().any():
+    item_ids = frame["Test"].astype(str).str.extract(r"^\s*(\d+)\.")[0]
+    if item_ids.isna().any():
         raise ValueError("item identities must begin with a numbered item")
-    check = frame.assign(item_id=ids.astype(int))
+    items = frame.assign(item_id=item_ids.astype(int))
     answers = _real(frame["Answer"], "Answer")
     if not np.isfinite(answers).all():
         raise ValueError("raw answer codes must be finite")
-    for kind, count in EXPECTED_ITEMS.items():
-        part = check.loc[check["Type"] == kind]
+    for kind, expected_count in EXPECTED_ITEMS.items():
+        part = items.loc[items["Type"] == kind]
         if (
-            len(part) != count
+            len(part) != expected_count
             or part["item_id"].duplicated().any()
-            or set(part["item_id"]) != set(range(1, count + 1))
+            or set(part["item_id"]) != set(range(1, expected_count + 1))
         ):
             raise ValueError(
-                f"{kind} responses must contain each of {count} items exactly once"
+                f"{kind} responses must contain each of {expected_count} items exactly once"
             )
     return (
         frame.assign(raw_code=answers)

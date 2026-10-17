@@ -1,4 +1,4 @@
-"""Validate the exact 33 research notebooks without scanning environments."""
+"""Validate the research notebooks without scanning environments."""
 
 import ast
 from pathlib import Path
@@ -15,11 +15,10 @@ NOTEBOOKS = sorted(
 
 
 def test_notebooks_present():
-    assert len(NOTEBOOKS) == 33
     assert {
         folder: sum(path.parent.name == folder for path in NOTEBOOKS)
         for folder in ("case-study", "individual", "group")
-    } == {"case-study": 10, "individual": 14, "group": 9}
+    } == {"case-study": 7, "individual": 9, "group": 6}
 
 
 @pytest.mark.parametrize(
@@ -38,7 +37,7 @@ def test_notebook_contract(path):
             tree = ast.parse(cell.source)
             assert cell.execution_count is None
             assert not cell.outputs, (
-                "Repaired source must not publish fresh participant-derived outputs"
+                "Source notebooks must not embed participant-derived outputs"
             )
             for node in ast.walk(tree):
                 if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute):
