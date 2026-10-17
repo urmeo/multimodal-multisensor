@@ -340,6 +340,49 @@ def test_alignment_skips_without_acquisition_metadata(monkeypatch):
 
 
 @pytest.mark.parametrize(
+    "zone,synchronized",
+    [("UTC", None), ("UTC", "0"), ("UTC", "true"), (None, "1"), ("", "1")],
+)
+def test_question_alignment_requires_both_clock_declarations(
+    monkeypatch, capsys, zone, synchronized
+):
+    for name, value in (
+        ("MMS_SENSOR_TIMEZONE", zone),
+        ("MMS_CLOCKS_SYNCHRONIZED", synchronized),
+    ):
+        if value is None:
+            monkeypatch.delenv(name, raising=False)
+        else:
+            monkeypatch.setenv(name, value)
+
+    def unexpected_load(*args, **kwargs):
+        pytest.fail("question features must not load before clock confirmation")
+
+    monkeypatch.setattr(ex, "question_features", unexpected_load)
+    assert ex.aligned_questions().empty
+    message = capsys.readouterr().out
+    assert "MMS_SENSOR_TIMEZONE" in message
+    assert "MMS_CLOCKS_SYNCHRONIZED=1" in message
+
+
+def test_question_alignment_uses_declared_clock_for_every_session(monkeypatch):
+    monkeypatch.setenv("MMS_SENSOR_TIMEZONE", "Asia/Dhaka")
+    monkeypatch.setenv("MMS_CLOCKS_SYNCHRONIZED", "1")
+    calls = []
+
+    def features(session, *, source, sensor_timezone):
+        calls.append((session, source, sensor_timezone))
+        return pd.DataFrame({"Session": [session], "n_hr": [session * 10]})
+
+    monkeypatch.setattr(ex, "question_features", features)
+    result = ex.aligned_questions(source="individual")
+    assert calls == [(session, "individual", "Asia/Dhaka") for session in (1, 2, 3)]
+    pd.testing.assert_frame_equal(
+        result, pd.DataFrame({"Session": [1, 2, 3], "n_hr": [10, 20, 30]})
+    )
+
+
+@pytest.mark.parametrize(
     "frame,k",
     [
         (pd.DataFrame(columns=["a", "b"]), 2),

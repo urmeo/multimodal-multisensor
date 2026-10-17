@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1440" height="1040" viewBox="0 0 1440 1040" role="img" aria-labelledby="pipeline-title pipeline-description" font-family="Arial, Helvetica, sans-serif">
   <title id="pipeline-title">Project pipeline: inputs, checks, analysis and outputs</title>
-  <desc id="pipeline-description">Eye, cardiac and questionnaire recordings are checked and summarized into plots and tables. Released group tables enter separately for session comparisons and P01 sensitivity analysis. Most group rows lack raw-data mappings. Clock-dependent work is blocked by missing metadata. Tests, notebooks and source hashes verify outputs without changing sources. Results are descriptive; events and clusters are unvalidated. Interval samples are not verified unique beats.</desc>
+  <desc id="pipeline-description">Eye, cardiac and questionnaire recordings are checked and summarized into plots and tables. Released group tables enter separately for session comparisons and P01 sensitivity analysis. Most group rows lack raw-data mappings. Question summaries, sensor joins and cross-sensor clusters require a documented acquisition timezone and synchronization confirmed by acquisition records. Both are unavailable; these steps remain skipped. Tests, notebooks and source hashes verify outputs without changing sources. Results are descriptive; events and clusters are unvalidated. Interval samples are not verified unique beats.</desc>
   <defs>
     <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto" markerUnits="userSpaceOnUse">
       <path d="M0 0L10 5L0 10Z" fill="#50B4D0"/>
@@ -85,8 +85,8 @@
 
   <rect x="40" y="736" width="1360" height="148" rx="8" fill="#1B2327" stroke="#D97D70" stroke-width="1.8" stroke-dasharray="8 6"/>
   <text x="64" y="772" fill="#D97D70" font-size="18" font-weight="700" letter-spacing="1">CLOCK-DEPENDENT WORK · METADATA UNAVAILABLE</text>
-  <text x="64" y="814" class="body">Verified timezone → question summaries</text>
-  <text x="64" y="852" class="body">Verified timezone + clock sync → sensor joins + exploratory clusters</text>
+  <text x="64" y="814" class="body">Require documented timezone + clock sync confirmed by acquisition records</text>
+  <text x="64" y="852" class="body">Question summaries · sensor joins · exploratory clusters stay skipped without both</text>
 
   <rect x="40" y="916" width="1360" height="88" rx="8" fill="#1B2327" stroke="#46555E" stroke-width="1.5"/>
   <text x="64" y="950" fill="#D5DCE0" font-size="23" font-weight="700">Verify tests · all notebooks · source hashes</text>

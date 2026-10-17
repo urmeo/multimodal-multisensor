@@ -31,7 +31,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for output settings and the hashed Linux 
 
 ## Results and limitations
 
-The released group tables give the following ICC(1,1) estimates for the consistency of within-session standard deviations across three sessions. Each estimate uses 10 participant rows and a 95% confidence interval.
+The released group tables give the following ICC(1,1) estimates for the session-to-session reliability of within-session standard deviations. Each estimate uses 10 participant rows across three sessions and a 95% confidence interval.
 
 | Within-session standard deviation | ICC | 95% interval |
 | :--- | ---: | :--- |
