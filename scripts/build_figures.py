@@ -154,7 +154,7 @@ def build(output: Path, rows: list[dict], corr: pd.DataFrame, hashes: dict) -> N
         xlim=(minimum, 1),
         ylim=(len(rows) - 0.4, -0.6),
         xlabel="ICC(1,1) and 95% interval",
-        title="Session consistency: released group summaries\n10 participants · 3 sessions · no diagnostic validation",
+        title="Session reliability: released group summaries\n10 participants · 3 sessions · no diagnostic validation",
     )
     ax.axvline(0, color="#9aa6b2", linestyle=":")
     ax.grid(axis="x", alpha=0.15)
