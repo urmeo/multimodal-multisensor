@@ -2,6 +2,8 @@
 
 Python analysis of eye, cardiac and questionnaire data from 10 adults across three weekly sessions. The code checks recordings, measures within-session variation and compares session summaries.
 
+**Keywords:** Physiological signals · Reliability analysis · PCA · scikit-learn
+
 ![Project pipeline: inputs, checks, analysis and outputs for available recordings and released group tables. Clock-dependent work is blocked by missing metadata.](images/pipeline.svg)
 
 [View full size](images/pipeline.svg) · [Edit in Figma](https://www.figma.com/board/hexcUfwWED4MIu7wjxmWrU/) · [Design files](design/README.md)
