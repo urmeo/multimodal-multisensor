@@ -25,8 +25,9 @@ dev = ["pytest>=7.4", "nbformat>=5.9", "nbmake>=1.5", "ipykernel>=6.25"]
 notebooks = ["jupyterlab>=4.6.4"]
 docs = ["mistune==3.3.3"]
 
-[tool.setuptools]
-packages = ["mms"]
+[tool.setuptools.packages.find]
+include = ["mms*"]
+namespaces = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
