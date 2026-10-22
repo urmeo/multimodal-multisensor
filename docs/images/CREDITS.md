@@ -23,4 +23,4 @@ affiliation or endorsement.
 | `noldus-facereader.jpg` | Noldus FaceReader | Noldus Information Technology BV |
 
 Rights holders can request removal or corrected credit through the
-[maintainer contact](../../DATA_ETHICS.md#contact).
+[maintainer contact](../../DATA_ETHICS.md#use-and-contact).
