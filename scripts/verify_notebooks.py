@@ -58,7 +58,13 @@ def main(argv: list[str] | None = None) -> int:
             OPENBLAS_NUM_THREADS="1",
             OMP_NUM_THREADS="1",
         )
-        environment.pop("MMS_SENSOR_TIMEZONE", None)
+        for name in (
+            "PYTEST_ADDOPTS",
+            "PYTEST_PLUGINS",
+            "MMS_SENSOR_TIMEZONE",
+            "MMS_CLOCKS_SYNCHRONIZED",
+        ):
+            environment.pop(name, None)
         command = [
             sys.executable,
             "-m",
@@ -74,7 +80,9 @@ def main(argv: list[str] | None = None) -> int:
             raise ValueError("notebook execution changed source inputs")
         if result.returncode:
             return result.returncode
-        print(f"All {len(notebooks)} notebooks executed; original and copied inputs unchanged.")
+        print(
+            f"All {len(notebooks)} notebooks executed; original and copied inputs unchanged."
+        )
     return 0
 
 

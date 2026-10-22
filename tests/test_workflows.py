@@ -1300,3 +1300,28 @@ def test_output_root_rejects_a_file_valued_parent(source_dataset, tmp_path):
     with pytest.raises(ValueError, match="parent must be a directory"):
         paths.resolve_output_root(parent / "export", data_root=source_dataset)
     assert parent.read_text() == "preserved\n"
+
+
+def test_notebook_verifier_ignores_host_pytest_and_clock_overrides(
+    notebook_checkout, monkeypatch
+):
+    monkeypatch.setattr(verify_notebooks, "ROOT", notebook_checkout)
+    overrides = {
+        "PYTEST_ADDOPTS": "--collect-only",
+        "PYTEST_PLUGINS": "a_missing_host_plugin",
+        "MMS_SENSOR_TIMEZONE": "UTC",
+        "MMS_CLOCKS_SYNCHRONIZED": "1",
+    }
+    for name, value in overrides.items():
+        monkeypatch.setenv(name, value)
+
+    def execute(command, *, cwd, env, check):
+        assert not set(overrides).intersection(env)
+        assert command[:3] == [sys.executable, "-m", "pytest"]
+        assert "--nbmake" in command and "--collect-only" not in command
+        assert len([argument for argument in command if argument.endswith(".ipynb")]) == 3
+        return subprocess.CompletedProcess(command, returncode=0)
+
+    monkeypatch.setattr(verify_notebooks.subprocess, "run", execute)
+    assert verify_notebooks.main([]) == 0
+    assert all(os.environ[name] == value for name, value in overrides.items())
