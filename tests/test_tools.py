@@ -15,36 +15,42 @@ from scripts import build_figures, verify_notebooks
 ROOT = Path(__file__).resolve().parents[1]
 
 
-@pytest.mark.parametrize("missing", verify_notebooks.FOLDERS)
-def test_notebook_verifier_rejects_an_empty_analysis_folder(tmp_path, monkeypatch, missing):
-    (tmp_path / "data").mkdir()
+@pytest.fixture
+def notebook_checkout(tmp_path):
+    root = tmp_path / "checkout"
+    (root / "data").mkdir(parents=True)
+    (root / "data" / "source.csv").write_text("value\n1\n")
     for folder in verify_notebooks.FOLDERS:
-        destination = tmp_path / folder
+        destination = root / folder
         destination.mkdir(parents=True)
-        if folder != missing:
-            (destination / "example.ipynb").write_text("{}")
-    monkeypatch.setattr(verify_notebooks, "ROOT", tmp_path)
+        (destination / "example.ipynb").write_text("{}")
+    return root
+
+
+@pytest.mark.parametrize("missing", verify_notebooks.FOLDERS)
+def test_notebook_verifier_rejects_an_empty_analysis_folder(
+    notebook_checkout, monkeypatch, missing
+):
+    (notebook_checkout / missing / "example.ipynb").unlink()
+    monkeypatch.setattr(verify_notebooks, "ROOT", notebook_checkout)
     with pytest.raises(ValueError, match="no source notebooks"):
         verify_notebooks.main([])
 
 
 @pytest.mark.parametrize("existing_path", [None, "another-project"])
 def test_notebook_verifier_imports_checkout_without_site_packages(
-    tmp_path, monkeypatch, existing_path
+    notebook_checkout, monkeypatch, existing_path
 ):
-    (tmp_path / "data").mkdir()
     shutil.copytree(
-        ROOT / "mms", tmp_path / "mms", ignore=shutil.ignore_patterns("__pycache__")
+        ROOT / "mms",
+        notebook_checkout / "mms",
+        ignore=shutil.ignore_patterns("__pycache__"),
     )
-    for folder in verify_notebooks.FOLDERS:
-        destination = tmp_path / folder
-        destination.mkdir(parents=True)
-        (destination / "example.ipynb").write_text("{}")
     if existing_path is None:
         monkeypatch.delenv("PYTHONPATH", raising=False)
     else:
         monkeypatch.setenv("PYTHONPATH", existing_path)
-    monkeypatch.setattr(verify_notebooks, "ROOT", tmp_path)
+    monkeypatch.setattr(verify_notebooks, "ROOT", notebook_checkout)
     run = subprocess.run
 
     def check_import(command, *, cwd, env, check):
@@ -57,12 +63,40 @@ def test_notebook_verifier_imports_checkout_without_site_packages(
             check=True,
             capture_output=True,
             text=True,
+            timeout=30,
         )
-        assert result.stdout.strip() == str(tmp_path)
+        assert result.stdout.strip() == str(notebook_checkout)
         return result
 
     monkeypatch.setattr(verify_notebooks.subprocess, "run", check_import)
     assert verify_notebooks.main([]) == 0
+
+
+def test_notebook_verifier_propagates_execution_failure(notebook_checkout, monkeypatch):
+    monkeypatch.setattr(verify_notebooks, "ROOT", notebook_checkout)
+
+    def fail_execution(command, *, cwd, env, check):
+        assert "--nbmake" in command
+        return subprocess.CompletedProcess(command, returncode=7)
+
+    monkeypatch.setattr(verify_notebooks.subprocess, "run", fail_execution)
+    assert verify_notebooks.main([]) == 7
+
+
+@pytest.mark.parametrize("changed_copy", [False, True], ids=["original", "copy"])
+def test_notebook_verifier_rejects_input_mutation(
+    notebook_checkout, monkeypatch, changed_copy
+):
+    monkeypatch.setattr(verify_notebooks, "ROOT", notebook_checkout)
+
+    def mutate_input(command, *, cwd, env, check):
+        root = cwd if changed_copy else notebook_checkout
+        (root / "data" / "source.csv").write_text("value\n2\n")
+        return subprocess.CompletedProcess(command, returncode=0)
+
+    monkeypatch.setattr(verify_notebooks.subprocess, "run", mutate_input)
+    with pytest.raises(ValueError, match="notebook execution changed source inputs"):
+        verify_notebooks.main([])
 
 
 @pytest.mark.parametrize(
@@ -70,9 +104,11 @@ def test_notebook_verifier_imports_checkout_without_site_packages(
 )
 def test_cli_help_and_unknown_argument(script):
     command = [sys.executable, str(ROOT / "scripts" / f"{script}.py")]
-    help_result = subprocess.run(command + ["--help"], capture_output=True, text=True)
+    help_result = subprocess.run(
+        command + ["--help"], capture_output=True, text=True, timeout=30
+    )
     invalid = subprocess.run(
-        command + ["--unknown-option"], capture_output=True, text=True
+        command + ["--unknown-option"], capture_output=True, text=True, timeout=30
     )
     assert help_result.returncode == 0 and "usage:" in help_result.stdout
     assert invalid.returncode == 2 and "unrecognized arguments" in invalid.stderr
