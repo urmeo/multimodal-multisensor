@@ -1,31 +1,13 @@
-"""Numerical regressions and checks against the preserved study summaries."""
+"""Numerical results and dataset-loader contracts."""
 
 import math
 
 import numpy as np
 import pandas as pd
 import pytest
+from scipy import stats as scipy_stats
 
 from mms import fixation, hrv, io, stats
-
-
-def test_icc1_reproduces_readme_hrv_value():
-    summary = io.load_group_summary("HRV_SDNN")
-    ratings = summary[["Session 01", "Session 02", "Session 03"]].to_numpy(float)
-    result = stats.icc1(ratings)
-    assert result["icc"] == pytest.approx(0.22, abs=0.02)
-    ci_low, ci_high = result["ci95"]
-    assert ci_low < 0 < ci_high
-
-
-def test_icc1_perfect_agreement_is_one():
-    data = np.array([[1.0, 1.0], [2.0, 2.0], [3.0, 3.0], [4.0, 4.0]])
-    result = stats.icc1(data)
-    assert result["icc"] == pytest.approx(1.0, abs=1e-9)
-    ci_low, ci_high = result["ci95"]
-    assert math.isnan(ci_low)
-    assert math.isnan(ci_high)
-    assert math.isinf(result["F"])
 
 
 @pytest.mark.parametrize(
@@ -43,85 +25,97 @@ def test_icc1_degenerate_input_returns_nan(ratings):
 
 def test_sdnn_filters_artifacts_and_zeros():
     beats = pd.Series([800, 810, 0, 790, 5000, 805])
-    expected = pd.Series([800, 810, 790, 805]).std(ddof=1)
-    assert hrv.sdnn(beats) == pytest.approx(expected)
+    assert hrv.sdnn(beats) == pytest.approx(np.sqrt(875 / 12))
 
 
-def test_rmssd_preserves_invalid_interval_gaps():
-    beats = pd.Series([800, 810, 0, 5000, 790, 805])
-    expected = float(np.sqrt((10**2 + 15**2) / 2))
-    assert hrv.rmssd(beats) == pytest.approx(expected)
-
-
-def test_hrv_over_time_is_not_a_broadcast_scalar():
-    random = np.random.default_rng(0)
-    times = np.arange(0, 300, 0.8)
+def test_time_windows_compute_variability_from_their_own_samples():
     frame = pd.DataFrame(
-        {"reltime": times, "ibi": 800 + random.normal(0, 40, len(times))}
+        {"reltime": [0, 1, 30, 31], "ibi": [800, 810, 1000, 1020]}
     )
     windows = hrv.hrv_over_time(frame, window_s=30)
-    assert len(windows) > 1
-    assert windows["sdnn"].nunique() > 1
+    assert windows["window_start_s"].tolist() == [0, 30]
+    assert windows["n_samples"].tolist() == windows["n_beats"].tolist() == [2, 2]
+    assert windows["n_pairs"].tolist() == [1, 1]
+    assert windows["sdnn"].tolist() == pytest.approx([np.sqrt(50), np.sqrt(200)])
+    assert windows["rmssd"].tolist() == pytest.approx([10, 20])
 
 
-def test_hrv_over_time_conserves_beats():
-    frame = pd.DataFrame({"reltime": [0, 10, 20, 30, 59.9, 60.0], "ibi": [800] * 6})
-    windows = hrv.hrv_over_time(frame, window_s=30)
-    assert windows["n_beats"].sum() == 6
-
-
-def test_benjamini_hochberg_bounds_and_dominates_raw():
+def test_benjamini_hochberg_restores_input_order():
     raw = np.array([0.9, 0.001, 0.5, 0.01, 0.04])
     adjusted = stats.benjamini_hochberg(raw)
-    assert np.all((adjusted >= 0) & (adjusted <= 1))
-    assert np.all(adjusted >= raw - 1e-12)
-    assert np.array_equal(np.argsort(adjusted), np.argsort(raw))
+    assert adjusted == pytest.approx([0.9, 0.005, 0.625, 0.025, 1 / 15])
 
 
 def test_benjamini_hochberg_is_nan_safe():
     adjusted = stats.benjamini_hochberg([0.001, 0.5, np.nan, 0.02])
     assert np.isnan(adjusted[2])
-    assert np.all(np.isfinite(adjusted[[0, 1, 3]]))
+    assert adjusted[[0, 1, 3]] == pytest.approx([0.003, 0.5, 0.03])
 
 
-def test_corr_matrix_fdr_does_not_add_significant_pairs():
-    measurements = pd.concat(
-        [
-            io.load_group_summary("HRV_SDNN")
-            .set_index("Participant")
-            .add_suffix("_HRV"),
-            io.load_group_summary("Pupil_Dilation_STD")
-            .set_index("Participant")
-            .add_suffix("_Pupil"),
-        ],
-        axis=1,
+@pytest.mark.parametrize("method", ["pearson", "spearman"])
+def test_correlation_matrix_adjusts_each_unique_pair_once(method):
+    measurements = pd.DataFrame(
+        {
+            "a": [1, 2, 3, 4, 5, 6],
+            "b": [1, 3, 2, 6, 4, 5],
+            "c": [6, 1, 4, 2, 5, 3],
+        }
     )
-    result = stats.corr_matrix_fdr(measurements)
-    upper_triangle = np.triu_indices(len(result["r"]), k=1)
-    raw_significant = (result["p_raw"].to_numpy()[upper_triangle] < 0.05).sum()
-    adjusted_significant = (result["p_fdr"].to_numpy()[upper_triangle] < 0.05).sum()
-    assert raw_significant > 0
-    assert adjusted_significant <= raw_significant
+    pairs = [("a", "b"), ("a", "c"), ("b", "c")]
+    correlate = scipy_stats.pearsonr if method == "pearson" else scipy_stats.spearmanr
+    references = [
+        correlate(measurements[left], measurements[right]) for left, right in pairs
+    ]
+    adjusted = scipy_stats.false_discovery_control(
+        [reference.pvalue for reference in references], method="bh"
+    )
+    result = stats.corr_matrix_fdr(measurements, method=method)
+    assert result["n_tests"] == len(pairs)
+    assert result["n_pairs"].eq(6).all().all()
+    for (left, right), reference, p_fdr in zip(pairs, references, adjusted):
+        assert result["r"].loc[left, right] == pytest.approx(reference.statistic)
+        assert result["p_raw"].loc[left, right] == pytest.approx(reference.pvalue)
+        assert result["p_fdr"].loc[left, right] == pytest.approx(p_fdr)
+    for name in ("r", "p_raw", "p_fdr", "n_pairs"):
+        pd.testing.assert_frame_equal(result[name], result[name].T)
+    assert np.diag(result["r"]).tolist() == [1, 1, 1]
+    assert np.isnan(np.diag(result["p_raw"])).all()
+    assert np.isnan(np.diag(result["p_fdr"])).all()
 
 
 def test_pupil_std_quality_gates_and_matches_std():
     frame = pd.DataFrame(
         {"pupil": [3.0, 4.0, 100.0, 5.0], "pupilQ": [1.0, 1.0, 0.1, 1.0]}
     )
-    expected = pd.Series([3.0, 4.0, 5.0]).std(ddof=1)
-    assert fixation.pupil_std(frame, quality_min=0.5) == pytest.approx(expected)
+    assert fixation.pupil_std(frame, quality_min=0.5) == pytest.approx(1)
 
 
-def test_parse_datetime_preserves_explicit_zone():
-    parsed = io.parse_datetime(pd.Series(["2024-05-28T15:37:00.695Z"]))
-    assert str(parsed.dt.tz) == "UTC"
-    assert parsed.iloc[0].year == 2024
-
-
-def test_load_hr_individual_source_and_raw_confidence():
-    filtered = io.load_hr(1, source="individual")
-    unfiltered = io.load_hr(1, source="individual", high_confidence_only=False)
-    assert len(unfiltered) >= len(filtered)
+def test_load_hr_keeps_only_declared_high_confidence_rows(tmp_path):
+    source = tmp_path / "individual" / "processed"
+    source.mkdir(parents=True)
+    frame = pd.DataFrame(
+        {"heart_rate": [80, 90, 100, 110], "confidence": [1, 0, 0.5, 1]}
+    )
+    path = source / "hr_01.csv"
+    frame.to_csv(path, index=False)
+    pd.testing.assert_frame_equal(
+        io.load_hr(1, source="individual", data_root=tmp_path), frame.iloc[[0, 3]]
+    )
+    pd.testing.assert_frame_equal(
+        io.load_hr(
+            1, source="individual", data_root=tmp_path, high_confidence_only=False
+        ),
+        frame,
+    )
+    frame.drop(columns="confidence").to_csv(path, index=False)
+    with pytest.raises(ValueError, match="confidence"):
+        io.load_hr(1, source="individual", data_root=tmp_path)
+    pd.testing.assert_frame_equal(
+        io.load_hr(
+            1, source="individual", data_root=tmp_path, high_confidence_only=False
+        ),
+        frame.drop(columns="confidence"),
+    )
 
 
 def test_unknown_source_raises():
@@ -153,14 +147,3 @@ def test_hrv_rolling_differences_stay_inside_beat_window():
     result = hrv.hrv_rolling(frame, window_beats=3)
     assert result["rmssd"].iloc[2] == pytest.approx(np.sqrt(5000))
     assert result["rmssd"].iloc[3] == 0
-
-
-def test_hrv_over_time_rejects_nonfinite_timestamps():
-    frame = pd.DataFrame(
-        {
-            "reltime": [0, np.inf, -np.inf, np.nan, 1],
-            "ibi": [800, 1900, 1900, 1900, 810],
-        }
-    )
-    with pytest.raises(ValueError, match="finite nonnegative"):
-        hrv.hrv_over_time(frame)

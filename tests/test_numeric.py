@@ -12,7 +12,8 @@ from mms import stats as mstats
 
 
 @pytest.mark.parametrize(
-    "values", [[800, 0, 1000], [800, np.nan, 1000], [800, np.inf, 1000], []]
+    "values",
+    [[800, 0, 1000], [800, 5000, 1000], [800, np.nan, 1000], [800, np.inf, 1000], []],
 )
 def test_rmssd_never_joins_invalid_intervals(values):
     assert math.isnan(hrv.rmssd(values))
@@ -102,7 +103,8 @@ def test_rolling_gap_filter_accepts_empty_stream_without_channels():
 
 
 @pytest.mark.parametrize(
-    "times", [[1, 0], [0, np.inf], [0, np.nan], [-1, 0], [False, True], [0, 1j]]
+    "times",
+    [[1, 0], [0, np.inf], [0, -np.inf], [0, np.nan], [-1, 0], [False, True], [0, 1j]],
 )
 @pytest.mark.parametrize("function", [hrv.hrv_rolling, hrv.hrv_over_time])
 def test_elapsed_times_must_be_real_finite_and_ordered(times, function):
@@ -170,14 +172,16 @@ def test_empty_single_and_exact_final_boundary_windows():
     assert final.n_samples.tolist() == [1, 2]
 
 
-def test_large_interval_arithmetic_remains_finite():
+def test_large_interval_arithmetic_matches_analytic_variability():
     values = [1e307, 5e307, 1e308]
     frame = pd.DataFrame({"reltime": [0, 1, 2], "ibi": values})
-    assert math.isfinite(hrv.sdnn(values, lo=0, hi=1e308))
-    assert math.isfinite(hrv.rmssd(values, lo=0, hi=1e308))
-    assert np.isfinite(
-        hrv.hrv_rolling(frame, window_beats=3, lo=0, hi=1e308).rmssd.iloc[-1]
-    )
+    expected_sd = np.sqrt(61 / 3) * 1e307
+    expected_rmssd = np.sqrt(41 / 2) * 1e307
+    assert hrv.sdnn(values, lo=0, hi=1e308) == pytest.approx(expected_sd)
+    assert hrv.rmssd(values, lo=0, hi=1e308) == pytest.approx(expected_rmssd)
+    rolling = hrv.hrv_rolling(frame, window_beats=3, lo=0, hi=1e308)
+    assert rolling.sdnn.iloc[-1] == pytest.approx(expected_sd)
+    assert rolling.rmssd.iloc[-1] == pytest.approx(expected_rmssd)
 
 
 def test_holm_and_bh_exact_unsorted_vectors_and_unrun_tests():
@@ -271,12 +275,13 @@ def test_icc_all_constant_undefined_and_large_finite_scale_invariant():
     )
 
 
-def test_identical_ratings_stay_perfect_without_rounding_variance():
-    values = np.repeat(np.array([[1.0], [2.0], [3.0]]), 5, axis=1)
+@pytest.mark.parametrize("n,k", [(4, 2), (3, 5)])
+def test_identical_ratings_stay_perfect_without_rounding_variance(n, k):
+    values = np.repeat(np.arange(1.0, n + 1)[:, None], k, axis=1)
     result = mstats.icc1(values)
     assert result["icc"] == 1.0
     assert math.isinf(result["F"])
-    assert math.isnan(result["ci95"][0])
+    assert all(math.isnan(bound) for bound in result["ci95"])
 
 
 @pytest.mark.parametrize(
