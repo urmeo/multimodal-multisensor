@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1440" height="1040" viewBox="0 0 1440 1040" role="img" aria-labelledby="pipeline-title pipeline-description" font-family="Arial, Helvetica, sans-serif">
-  <title id="pipeline-title">Project pipeline: inputs, checks, analysis and outputs</title>
-  <desc id="pipeline-description">Eye, cardiac and questionnaire recordings are checked and summarized into plots and tables. Released group tables enter separately for session comparisons and P01 sensitivity analysis. Most group rows lack raw-data mappings. Question summaries, sensor joins and cross-sensor clusters require a documented acquisition timezone and synchronization confirmed by acquisition records. Both are unavailable; these steps remain skipped. Tests, notebooks and source hashes verify outputs without changing sources. Results are descriptive; events and clusters are unvalidated. Interval samples are not verified unique beats.</desc>
+  <title id="pipeline-title">Historical analysis workflow: inputs, checks, analysis and outputs</title>
+  <desc id="pipeline-description">Historical workflow before removal of the analysis package and scripts. Available recordings and released group tables were processed separately. Saved plots and tables remain, but this checkout cannot regenerate them. Most group rows lack raw-data mappings. Clock-dependent joins were blocked by missing acquisition timezone and synchronization metadata. Interval samples are not verified unique beats; results are descriptive.</desc>
   <defs>
     <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto" markerUnits="userSpaceOnUse">
       <path d="M0 0L10 5L0 10Z" fill="#50B4D0"/>
@@ -20,8 +20,8 @@
   </defs>
 
   <rect width="1440" height="1040" fill="#14191C"/>
-  <text x="40" y="60" class="title">PROJECT PIPELINE</text>
-  <text x="40" y="96" class="subtitle">Recordings and released group tables enter separately.</text>
+  <text x="40" y="60" class="title">HISTORICAL ANALYSIS WORKFLOW</text>
+  <text x="40" y="96" class="subtitle">Analysis code has been removed. Source data and saved results remain.</text>
   <path d="M40 122H1400" stroke="#A6B6BF" stroke-width="1.5"/>
 
   <text x="40" y="164" class="stage">01  INPUTS</text>
@@ -89,6 +89,6 @@
   <text x="64" y="852" class="body">Question summaries · sensor joins · exploratory clusters stay skipped without both</text>
 
   <rect x="40" y="916" width="1360" height="88" rx="8" fill="#1B2327" stroke="#46555E" stroke-width="1.5"/>
-  <text x="64" y="950" fill="#D5DCE0" font-size="23" font-weight="700">Verify tests · all notebooks · source hashes</text>
-  <text x="64" y="984" class="note">Preserve source files. Results are descriptive; event candidates and clusters are unvalidated.</text>
+  <text x="64" y="950" fill="#D5DCE0" font-size="23" font-weight="700">Historical checks: tests · notebooks · source hashes</text>
+  <text x="64" y="984" class="note">Saved results are descriptive; event candidates and clusters were not validated.</text>
 </svg>

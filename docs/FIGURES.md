@@ -1,12 +1,14 @@
 # Figure provenance
 
+The saved figures and provenance files are retained. Their analysis code is preserved in [snapshot `0f2b1cc`](https://github.com/urmeo/multimodal-multisensor/tree/0f2b1cc55409b1b68bc9ee52341382263fa4559e). The analysis scripts are no longer included in this checkout.
+
 ## Recording figures
 
 The [heart-rate](../outputs/recorded-heart.png), [interval](../outputs/recorded-interval.png) and [pupil](../outputs/recorded-pupil.png) plots use `data/case-study/raw/hr_01.txt`, `ibi_01.txt` and `sed_01.txt` directly. They describe the available samples from session 1.
 
 Heart rate retains finite positive readings with confidence 1. Intervals retain finite positive readings, including repeated samples. Pupils retain finite positive readings with `0.5 < pupilQ <= 1`. Channels stay separate. Each stream uses its own recording-relative time in seconds; clocks are not aligned across streams. Reported units are bpm, ms and mm. Calibration and unique-beat provenance are unverified.
 
-`outputs/recording-figures.toml` records source hashes, a hash of the exact selected values, filters, units, counts and image hashes. Check mode writes nothing. These plots do not establish anxiety categories or validate the ten-person group tables.
+`outputs/recording-figures.toml` records source hashes, a hash of the exact selected values, filters, units, counts and image hashes. The [archived recording-figure script](https://github.com/urmeo/multimodal-multisensor/blob/0f2b1cc55409b1b68bc9ee52341382263fa4559e/scripts/build_recording_figures.py) records the calculation. These plots do not establish anxiety categories or validate the ten-person group tables.
 
 The [session photograph](../images/data_collection_session.jpg) appears in thesis Annex E, PDF page 46, printed page 49. Its caption explicitly records photo consent. The [experimental setup photograph](../images/experimental_setup.jpg) is also preserved. Source image bytes are unchanged.
 
@@ -16,7 +18,7 @@ The README's [reliability plot](../outputs/reliability.png) and the [correlation
 
 Most group rows cannot be traced to the available raw recordings. The calculations reproduce the released tables; they do not independently verify the cohort measurements.
 
-`outputs/figures.csv` records calculated values. `outputs/figures.toml` records source hashes, methods and figure hashes. See [Run the analysis](../README.md#run-the-analysis) for checks and export commands.
+`outputs/figures.csv` records calculated values. `outputs/figures.toml` records source hashes, methods and figure hashes. The [archived group-figure script](https://github.com/urmeo/multimodal-multisensor/blob/0f2b1cc55409b1b68bc9ee52341382263fa4559e/scripts/build_figures.py) records the calculation.
 
 ## Historical snapshots
 
@@ -24,7 +26,7 @@ Historical images retain their bytes from release baseline `a369ee0dc2dcac24feaa
 
 - The former README heatmap shows interval S1/S2 = 0.03 and interval S1/pupil S3 = 0.85. The separately released Spearman image shows 0.55 and 0.48. Differences in methods or source snapshots prevent treating the images as interchangeable.
 - The silhouette figure peaks at k = 2, while the cluster display uses k = 3. These historical images do not establish anxiety categories or validated participant clusters. They also do not establish that PCA preceded clustering.
-- Timing, pupil, fixation and scoring screenshots retain their historical labels and source values. Current results exclude unsupported clinical cutoffs and mixed units.
+- Timing, pupil, fixation and scoring screenshots retain their historical labels and source values. The saved descriptive results exclude unsupported clinical cutoffs and mixed units.
 
 | Original path | Preserved file | SHA256 |
 | :--- | :--- | :--- |

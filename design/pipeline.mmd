@@ -1,18 +1,18 @@
 flowchart LR
-  subgraph recordings["Available recordings"]
+  subgraph recordings["Historical recording analysis"]
     direction LR
     R["Eye + cardiac samples<br/>Raw answers + response times"] --> RC["Check values, time and quality<br/>Keep channels and gaps"]
     RC --> RA["Sample metrics<br/>Eye-event candidates<br/>Response statistics"]
     RA --> RO["Traces + distributions<br/>Event plots + tables"]
   end
-  subgraph group["Released group tables · 10 adults × 3 sessions"]
+  subgraph group["Historical group comparisons · 10 adults × 3 sessions"]
     direction LR
     G["Interval, pupil and duration SD"] --> GC["Validate participant/session rows<br/>Check known repeats"]
     GC --> GA["ICC + Spearman + paired tests<br/>P01 sensitivity"]
     GA --> GO["95% reliability intervals<br/>Correlations + sensitivity plots/tables"]
   end
-  LIMIT["Most group rows lack raw-data mappings.<br/>Question summaries, sensor joins and cross-sensor clusters require a documented timezone and acquisition-confirmed clock sync.<br/>Both are undocumented; these steps stay skipped.<br/>Eye events are candidates; interval samples are not verified unique beats."]
-  VERIFY["Verify tests, all notebooks and source hashes.<br/>Preserve source files. Results are descriptive."]
+  LIMIT["Most group rows lack raw-data mappings.<br/>Question summaries, sensor joins and cross-sensor clusters require a documented timezone and acquisition-confirmed clock sync.<br/>Both were undocumented; these steps were skipped.<br/>Eye events are candidates; interval samples are not verified unique beats."]
+  VERIFY["Historical checks: tests, notebooks and source hashes.<br/>Analysis code is no longer included. Saved results are descriptive."]
   classDef input fill:#1b2327,stroke:#9eafb8,color:#d5dce0;
   classDef analysis fill:#1b2327,stroke:#50b4d0,color:#d5dce0;
   classDef limit fill:#1b2327,stroke:#d97d70,color:#d5dce0,stroke-dasharray:6 4;

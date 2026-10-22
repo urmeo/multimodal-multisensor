@@ -1,6 +1,6 @@
 # Report status
 
-The PDFs retain their bytes from release baseline `a369ee0dc2dcac24feaa9e2e1faf160c39d5a3de`, which revised the thesis and poster. Locations use PDF pages, with printed page numbers where they differ. Use the current code and tables for reproducible calculations; the source gaps below limit interpretation of the historical reports.
+The PDFs retain their bytes from release baseline `a369ee0dc2dcac24feaa9e2e1faf160c39d5a3de`, which revised the thesis and poster. Locations use PDF pages, with printed page numbers where they differ. The result tables are retained; their [analysis code](https://github.com/urmeo/multimodal-multisensor/tree/0f2b1cc55409b1b68bc9ee52341382263fa4559e) is no longer included in this checkout. The source gaps below limit interpretation of the historical reports.
 
 | Report | Status |
 | :--- | :--- |
@@ -12,7 +12,7 @@ The PDFs retain their bytes from release baseline `a369ee0dc2dcac24feaa9e2e1faf1
 
 | Location | Correction or unresolved issue |
 | :--- | :--- |
-| Technical p3 | The report counts openness values above 1 as closed; the code counts values at or below 1 as closed. Units and polarity are unverified. Current outputs are heuristic candidates that require observed reopening and handle gaps. Gaze distance was not angular velocity. |
+| Technical p3 | The report counts openness values above 1 as closed; the archived analysis uses values at or below 1 for candidate closure. Units and polarity are unverified. Its event rules require observed reopening and handle gaps. Gaze distance was not angular velocity. |
 | Technical p6 | P01 S3 interval SD is 1012.69 in the report and 65.39 in the CSV. The original raw source is unavailable. Both values are preserved; the discrepancy is unresolved. |
 | Technical p8 to 11 | Claims about agreement at k = 3, PCA before clustering, HADS validation and stable traits exceed the code evidence. The case study clusters timestamp samples from one person. It does not validate clinical or participant categories. |
 | Thesis p25, printed 28 | Some p values exceed 1; values shown as 0.00 are rounded. Recovering lost exponents and precision requires the original statistical output. No replacement values are supplied. |
@@ -23,7 +23,7 @@ The PDFs retain their bytes from release baseline `a369ee0dc2dcac24feaa9e2e1faf1
 
 ## Cardiac sensitivity
 
-The original P01 S3 export is absent from the released files and Git history. The sensitivity analysis compares the released value, the report's printed value and omission of P01 from all three group tables.
+The original P01 S3 export is absent from the released files and Git history. The preserved sensitivity results compare the released value, the report's printed value and omission of P01 from all three group tables.
 
 | Scenario | Participants | ICC(1,1) of interval-sample SD | 95% interval |
 | :--- | ---: | ---: | :--- |
@@ -37,7 +37,7 @@ The report value is rounded and unverified. Neither alternative establishes the 
 
 [ICC results](../outputs/sensitivity/icc.csv) · [Correlations](../outputs/sensitivity/correlations.csv) · [Omnibus tests](../outputs/sensitivity/omnibus.csv) · [Paired tests](../outputs/sensitivity/paired.csv) · [Sources and settings](../outputs/sensitivity/provenance.json)
 
-See [Run the analysis](../README.md#run-the-analysis) for sensitivity checks and export commands.
+The [archived sensitivity script](https://github.com/urmeo/multimodal-multisensor/blob/0f2b1cc55409b1b68bc9ee52341382263fa4559e/scripts/build_group_sensitivity.py) records the three scenarios and calculations.
 
 ## Bibliography
 

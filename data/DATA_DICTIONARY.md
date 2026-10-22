@@ -1,6 +1,6 @@
 # Data dictionary
 
-The data comes from one participant. Raw sensor readings and questionnaire responses cover Session 1; supplied eye summaries cover three sessions. The tables below describe stored fields and constraints. [Data rights and consent](../DATA_ETHICS.md) apply to every resource.
+This dictionary covers only the six CSVs directly under `data/`. It does not cover `case-study/`, `individual/` or `group_results/`. These six files describe one participant. Sensor readings and questionnaire responses cover Session 1; supplied eye summaries cover three sessions. The tables below describe stored fields and constraints. [Data rights and consent](../DATA_ETHICS.md) apply to every resource.
 
 | Resource | Rows | Scope |
 |---|---:|---|
@@ -21,7 +21,7 @@ The data comes from one participant. Raw sensor readings and questionnaire respo
 | `session-2` | `eye_metrics`: `Test 02` | Raw streams and acquisition/calibration logs absent; aggregation unknown |
 | `session-3` | `eye_metrics`: `Test 03` | Raw streams and acquisition/calibration logs absent; aggregation unknown |
 
-Calendar dates are withheld from the current publication. Session labels preserve recording grouping and do not establish shared clocks. Each `iSensor` identifier is local to its file; matching numbers in HR and IBI do not identify the same physical unit. Summary rows have no channel identifier. Their `source_data` is null, including Session 1, because their relationship to available raw streams has not been reproduced.
+Calendar dates are withheld from these six files. Other dataset directories retain calendar timestamps. Session labels preserve recording grouping and do not establish shared clocks. Each `iSensor` identifier is local to its file; matching numbers in HR and IBI do not identify the same physical unit. Summary rows have no channel identifier. Their `source_data` is null, including Session 1, because their relationship to available raw streams has not been reproduced.
 
 Each stream has device, calibration, clock and aggregation records. Metadata states describe the available evidence:
 
@@ -38,12 +38,12 @@ Each stream has device, calibration, clock and aggregation records. Metadata sta
 | `eye_metrics` | `Start (s)`, `End (s)` | Earliest start within each `Test`; separate zero per session | Naive; unspecified |
 | `psych` | `Question Start (s)`, `Question Answer (s)` | Earliest questionnaire start | Aware; UTC |
 
-- All six current CSVs contain relative time only. No calendar origin, calendar date or between-session gap is published in the current data or recording metadata.
+- These six CSVs contain relative time only. No calendar origin, calendar date or between-session gap is published in them or their recording metadata.
 - Sensor streams span about 535 seconds. Their existing offsets and every non-calendar cell are retained. Summary and questionnaire intervals retain their original precision; no cross-resource offset is inferred.
 - Origins differ by resource and session. Equal elapsed readings do not establish synchronization, and the original timezone and acquisition clock mappings remain unverified.
 - The schema's `timeRepresentation`, `timeZone`, `timestampAwareness`, `timestampFields`, `relativeTimeFields`, `relativeTimeOrigin` and `sourceTimeZone` are custom descriptive metadata. Relative seconds have no timezone; `sourceTimeZone` describes the former calendar clock only.
-- The manifest records current hashes and `original_sha256` hashes of byte-exact originals retained privately outside the repository. The conversion preserves all non-calendar cells, row order and row counts. The exporter also accepts already-relative samples without changing their values.
-- Current relative-only publication does not remove calendar values from existing Git history, forks, clones or earlier downloads. It does not make sensitive responses or physiological patterns anonymous. See [data ethics](../DATA_ETHICS.md).
+- The manifest records current hashes and `original_sha256` hashes of byte-exact originals retained privately outside the repository. The recorded conversion preserves all non-calendar cells, row order and row counts; its exporter is not included in this checkout.
+- The six-file conversion does not remove calendar values from other dataset directories, existing Git history, forks, clones or earlier downloads. It does not make sensitive responses or physiological patterns anonymous. See [data ethics](../DATA_ETHICS.md).
 
 ## Heart rate and interval readings
 
@@ -51,7 +51,7 @@ Each stream has device, calibration, clock and aggregation records. Metadata sta
 |---|---|---|---|
 | Both | `reltime` | number | 0.001–534.892 s from recording start |
 | Both | `iSensor` | integer | Anonymous channel 0–5; device mapping unavailable |
-| `hr` | `confidence` | number | 0 or 1; `valid_hr` retains 1 |
+| `hr` | `confidence` | number | 0 or 1; historical filtering retained 1 |
 | `hr` | `heart_rate` | number | 0–73 BPM; zero represents no lock in supplied metadata |
 | `ibi` | `ibi` | integer | 0–1,093 ms; zero initialization values retained |
 
@@ -83,9 +83,7 @@ The historical filename means “Smart Eye Data”. Recorded device, adapter, sa
 | `pupil` | number | 0–3.88; reported mm, calibration unavailable |
 | `pupilQ` | number | Reported measurement quality, 0–1 |
 
-The cause of the all-zero head fields is unknown. `valid_pupil` keeps finite, positive pupil readings and finite quality values with `0.5 < pupilQ <= 1` by default. Its configurable cutoff must be finite and within 0–1. This is a descriptive filter, not a validated anxiety rule.
-
-Boolean, datetime/date and timedelta values in either measurement column raise `ValueError` before numeric conversion. This includes values in mixed object columns and temporal `NaT` values. Numeric strings are converted as before. Ordinary missing values (`None`, `pd.NA`, `np.nan`) and nonnumeric strings are excluded.
+The cause of the all-zero head fields is unknown. Historical filtering notes retain finite, positive pupil readings with finite quality values satisfying `0.5 < pupilQ <= 1`. This is a descriptive filter, not a validated anxiety rule. The filtering implementation is not included in this checkout.
 
 ## Legacy runs: `sed_fix.csv`
 
@@ -100,7 +98,7 @@ All 23 current eye-source columns are retained; the calendar column has been rem
 
 - Existing observations: 30,289 true samples; 2,479 true runs; 4,958 total runs; true-run spans 0–1.938 s.
 - This low-movement heuristic has no quality, gap or minimum-duration rule. False samples are not measured saccades.
-- Reproduction compares derived numbers with `rtol=0`, `atol=1e-9`. The source CSV remains unchanged.
+- The manifest records a historical comparison with `rtol=0`, `atol=1e-9`. Its referenced `scripts.derive` implementation is not included in this checkout.
 
 ## Supplied summaries: `eye_metrics.csv`
 
@@ -131,4 +129,4 @@ Session 1 has 88 “Yes” pupil flags. Their cause is unknown. Large blink valu
 | `Time(s)` | number | Response duration, 2.016–22.737 s |
 | `Question Start (s)`, `Question Answer (s)` | number | Elapsed seconds from the earliest questionnaire start |
 
-The instrument variant, reverse-keying and aggregate scoring are undocumented. These codes are not validated scale totals. Time fields are checked against `Time(s)` within 0.001 s. Longer responses do not establish deliberation, avoidance or anxiety.
+The instrument variant, reverse-keying and aggregate scoring are undocumented. These codes are not validated scale totals. The elapsed question intervals match `Time(s)` within 0.001 s. Longer responses do not establish deliberation, avoidance or anxiety.
