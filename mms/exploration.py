@@ -859,8 +859,16 @@ def baseline_changes(table, values):
     keys = ["Channel"] if "Channel" in table else []
     baseline = table.loc[table["Recording"] == "Baseline", keys + values]
     if keys:
+        if baseline["Channel"].duplicated().any() or not table["Channel"].isin(
+            baseline["Channel"]
+        ).all():
+            raise ValueError("exactly one recorded baseline is required for every channel")
         joined = table.merge(
-            baseline, on=keys, suffixes=("", "_baseline"), validate="many_to_one"
+            baseline,
+            on=keys,
+            how="left",
+            suffixes=("", "_baseline"),
+            validate="many_to_one",
         )
     else:
         if len(baseline) != 1:

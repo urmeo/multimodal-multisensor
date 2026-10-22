@@ -303,6 +303,35 @@ def test_baseline_change_uses_matching_channel_and_original_units(value_names):
     assert result["Change in Mean"].tolist() == [0, 0, 10, -5]
 
 
+@pytest.mark.parametrize("baseline_channels", [[], [5], [5, 5, 6]])
+def test_baseline_changes_require_one_baseline_per_channel(baseline_channels):
+    table = pd.DataFrame(
+        {
+            "Recording": ["Baseline"] * len(baseline_channels) + ["Session 01"] * 2,
+            "Channel": [*baseline_channels, 5, 6],
+            "Mean": [80] * len(baseline_channels) + [90, 100],
+        }
+    )
+    before = table.copy(deep=True)
+    with pytest.raises(ValueError, match="one recorded baseline.*every channel"):
+        ex.baseline_changes(table, ["Mean"])
+    pd.testing.assert_frame_equal(table, before)
+
+
+def test_baseline_changes_preserve_rows_with_missing_baseline_measurements():
+    table = pd.DataFrame(
+        {
+            "Recording": ["Session 01", "Baseline", "Session 01", "Baseline"],
+            "Channel": [6, 5, 5, 6],
+            "Mean": [100, 80, 90, np.nan],
+        }
+    )
+    result = ex.baseline_changes(table, ["Mean"])
+    pd.testing.assert_frame_equal(result[table.columns], table)
+    assert result.loc[result.Channel.eq(5), "Change in Mean"].tolist() == [0, 10]
+    assert result.loc[result.Channel.eq(6), "Change in Mean"].isna().all()
+
+
 @pytest.mark.parametrize("value_names", [list, iter], ids=["list", "iterator"])
 def test_baseline_change_without_channels_preserves_all_requested_values(value_names):
     table = pd.DataFrame(
