@@ -231,7 +231,9 @@ def run(
         )
         for metric, values in original.items()
     }
-    frames["filtered_channel_sample_variability.csv"] = pd.DataFrame(records)
+    frames["filtered_channel_sample_variability.csv"] = pd.DataFrame(
+        records, columns=["session", "channel", "metric", "n_samples", "value"]
+    )
     destinations = paths.output_paths(
         output_root, (*frames, "MANIFEST.json"), data_root=source, flat=True
     )

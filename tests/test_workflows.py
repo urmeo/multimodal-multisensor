@@ -1559,3 +1559,43 @@ def test_site_failed_rollback_preserves_previous_build_in_backup(
     assert file_hashes(backups[0]) == before
     assert not output.exists()
     assert set(output.parent.glob(".mms-docs-*")) == set(backups)
+
+
+def test_summary_without_retained_samples_writes_readable_empty_csv(
+    source_dataset, tmp_path
+):
+    for session in (1, 2, 3):
+        intervals = pd.DataFrame(
+            {
+                "ibi": [100 + 10 * session * index for index in range(4)],
+                "iSensor": [3] * 4,
+            }
+        )
+        intervals.to_csv(
+            source_dataset / f"case-study/processed/ibi_{session:02d}.csv", index=False
+        )
+        eye_path = source_dataset / f"case-study/processed/sed_fix_{session:02d}.csv"
+        eye = pd.read_csv(eye_path)
+        eye["pupilQ"] = 0.0
+        eye.to_csv(eye_path, index=False)
+    group_path = source_dataset / "group_results/HRV_SDNN.csv"
+    group = pd.read_csv(group_path)
+    group.loc[group["Participant"] == "P02", list(paths.SESSION_COLUMNS)] = [
+        np.std([100 + 10 * session * index for index in range(4)], ddof=1)
+        for session in (1, 2, 3)
+    ]
+    group.to_csv(group_path, index=False)
+    before = file_hashes(source_dataset)
+    output = tmp_path / "review"
+    assert build_group_summaries.run(source_dataset, output) is True
+    result = pd.read_csv(output / "filtered_channel_sample_variability.csv")
+    assert result.empty
+    assert result.columns.tolist() == [
+        "session",
+        "channel",
+        "metric",
+        "n_samples",
+        "value",
+    ]
+    assert (output / "MANIFEST.json").is_file()
+    assert file_hashes(source_dataset) == before
