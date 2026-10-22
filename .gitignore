@@ -16,3 +16,4 @@ dist/
 .idea/
 *.HEIC
 data/group_results/reconstructed/
+outputs/local/
