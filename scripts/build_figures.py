@@ -110,7 +110,18 @@ def verify(output: Path, rows: list[dict], corr: pd.DataFrame, hashes: dict) -> 
             raise ValueError("figure bytes differ from their recorded hashes")
 
 
-def build(output: Path, rows: list[dict], corr: pd.DataFrame, hashes: dict) -> None:
+def build(
+    output: Path,
+    rows: list[dict],
+    corr: pd.DataFrame,
+    hashes: dict,
+    *,
+    data_root: str | Path | None = None,
+) -> None:
+    destinations = paths.output_paths(
+        output, OUTPUT_NAMES, data_root=data_root, flat=True
+    )
+    output = paths.resolve_output_root(output, data_root=data_root)
     output.mkdir(parents=True, exist_ok=True)
     plt.rcParams.update(
         {
@@ -158,7 +169,7 @@ def build(output: Path, rows: list[dict], corr: pd.DataFrame, hashes: dict) -> N
     )
     ax.axvline(0, color="#9aa6b2", linestyle=":")
     ax.grid(axis="x", alpha=0.15)
-    fig.savefig(output / "reliability.png", dpi=150)
+    fig.savefig(destinations["reliability.png"], dpi=150)
     plt.close(fig)
 
     short = [
@@ -190,9 +201,9 @@ def build(output: Path, rows: list[dict], corr: pd.DataFrame, hashes: dict) -> N
     )
     plt.setp(ax.get_xticklabels(), rotation=35, ha="right", rotation_mode="anchor")
     fig.colorbar(plot, ax=ax, shrink=0.8, label="Spearman r; descriptive")
-    fig.savefig(output / "correlation.png", dpi=150)
+    fig.savefig(destinations["correlation.png"], dpi=150)
     plt.close(fig)
-    with (output / "figures.csv").open("w", newline="") as stream:
+    with destinations["figures.csv"].open("w", newline="") as stream:
         writer = csv.DictWriter(
             stream, fieldnames=("metric", "row", "column", "value"), lineterminator="\n"
         )
@@ -203,11 +214,8 @@ def build(output: Path, rows: list[dict], corr: pd.DataFrame, hashes: dict) -> N
     metadata += ["", "[source]"]
     metadata += [f'{key} = "{value}"' for key, value in hashes.items()]
     metadata += ["", "[figure]"]
-    metadata += [
-        f'"{name}" = "{digest(output / name)}"'
-        for name in FIGURE_NAMES
-    ]
-    (output / "figures.toml").write_text("\n".join(metadata) + "\n")
+    metadata += [f'"{name}" = "{digest(destinations[name])}"' for name in FIGURE_NAMES]
+    destinations["figures.toml"].write_text("\n".join(metadata) + "\n")
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -228,17 +236,7 @@ def main(argv: list[str] | None = None) -> int:
     try:
         rows, corr, hashes = calculate(args.data_root)
         if args.output_root is not None:
-            root = paths.resolve_data_root(args.data_root)
-            destinations = [
-                paths.output_path(args.output_root, name, data_root=root)
-                for name in OUTPUT_NAMES
-            ]
-            output = paths.resolve_output_root(args.output_root, data_root=root)
-            if any(destination.parent != output for destination in destinations):
-                raise ValueError(
-                    "aggregate figure paths must remain in one flat output directory"
-                )
-            build(output, rows, corr, hashes)
+            build(args.output_root, rows, corr, hashes, data_root=args.data_root)
             action = "Wrote"
         else:
             verify(ROOT / "outputs", rows, corr, hashes)

@@ -13,6 +13,7 @@ from scipy import stats as scipy_stats
 
 from mms import exploration as ex
 from mms import io, paths
+from scripts import build_figures
 from scripts import build_group_sensitivity as sensitivity
 from scripts import build_recording_figures as recording_figures
 
@@ -949,3 +950,94 @@ def test_invalid_recording_does_not_create_outputs(tmp_path):
             ["--data-root", str(tmp_path / "data"), "--output-root", str(destination)]
         )
     assert not destination.exists()
+
+
+WRITERS = {
+    "aggregate": (
+        lambda output, data: build_figures.build(
+            output, [], pd.DataFrame(), {}, data_root=data
+        ),
+        build_figures.OUTPUT_NAMES,
+    ),
+    "recording": (
+        lambda output, data: recording_figures.render(output, {}, {}, data_root=data),
+        recording_figures.OUTPUT_NAMES,
+    ),
+    "sensitivity": (
+        lambda output, data: sensitivity.build(output, {}, data_root=data),
+        sensitivity.OUTPUT_NAMES,
+    ),
+}
+
+
+@pytest.mark.parametrize("writer", WRITERS)
+@pytest.mark.parametrize(
+    "destination", ["inside data", "source hardlink", "nested symlink"]
+)
+def test_public_writers_reject_unsafe_destinations_before_writing(
+    tmp_path, writer, destination
+):
+    source = tmp_path / "data" / "observations.csv"
+    source.parent.mkdir()
+    source.write_bytes(b"preserved temporary observations\n")
+    before = source.read_bytes()
+    write, names = WRITERS[writer]
+    output = tmp_path / "figures"
+    if destination == "inside data":
+        output = source.parent / "figures"
+        expected = "separate from the source"
+    else:
+        output.mkdir()
+        if destination == "source hardlink":
+            os.link(source, output / names[-1])
+            expected = "aliases a source"
+        else:
+            (output / "nested").mkdir()
+            (output / names[-1]).symlink_to(output / "nested" / names[-1])
+            expected = "one flat output directory"
+    existing = set(output.rglob("*")) if output.exists() else set()
+    with pytest.raises(ValueError, match=expected):
+        write(output, source.parent)
+    assert source.read_bytes() == before
+    assert (set(output.rglob("*")) if output.exists() else set()) == existing
+
+
+def test_aggregate_writer_creates_a_verified_output_set(tmp_path):
+    data = tmp_path / "data"
+    data.mkdir()
+    output = tmp_path / "figures"
+    rows = [
+        {
+            "measure": "Synthetic",
+            "icc": 0.5,
+            "lower": 0.1,
+            "upper": 0.8,
+            "n": 10,
+            "k": 3,
+        }
+    ]
+    correlation = pd.DataFrame([[1.0]], index=["Synthetic"], columns=["Synthetic"])
+    hashes = {"fixture": "temporary-source-hash"}
+    build_figures.build(output, rows, correlation, hashes, data_root=data)
+    build_figures.verify(output, rows, correlation, hashes)
+    assert {path.name for path in output.iterdir()} == set(build_figures.OUTPUT_NAMES)
+
+
+def test_recording_writer_creates_a_verified_output_set(tmp_path):
+    data_root = tmp_path / "data"
+    data_root.mkdir()
+    output = tmp_path / "figures"
+    data = {
+        name: {"0": {"time_s": [0.0, 1.0], "values": values}}
+        for name, values in {
+            "heart": [80.0, 81.0],
+            "interval": [800.0, 810.0],
+            "pupil": [3.0, 3.1],
+        }.items()
+    }
+    info = {"scope": "temporary synthetic fixture"}
+    recording_figures.render(output, data, info, data_root=data_root)
+    recording_figures.verify(output, info)
+    assert {path.name for path in output.iterdir()} == set(
+        recording_figures.OUTPUT_NAMES
+    )

@@ -94,11 +94,14 @@ def calculate(data_root: str | Path | None = None) -> dict:
         omnibus, paired = exploration.paired_group_tests(selected)
         for name, table in (("omnibus.csv", omnibus), ("paired.csv", paired)):
             rows[name].extend(
-                table.assign(scenario=scenario)[["scenario", *table.columns]]
-                .to_dict("records")
+                table.assign(scenario=scenario)[["scenario", *table.columns]].to_dict(
+                    "records"
+                )
             )
     hashes = {
-        f"data/group_results/{metric}.csv": digest(source / "group_results" / f"{metric}.csv")
+        f"data/group_results/{metric}.csv": digest(
+            source / "group_results" / f"{metric}.csv"
+        )
         for metric in paths.GROUP_METRICS
     }
     hashes[REPORT.relative_to(ROOT).as_posix()] = digest(REPORT)
@@ -106,7 +109,11 @@ def calculate(data_root: str | Path | None = None) -> dict:
         "tables": {name: pd.DataFrame(records) for name, records in rows.items()},
         "source_sha256": hashes,
         "settings": {
-            "candidate_cell": {"metric": METRIC, "participant": "P01", "session": "Session 03"},
+            "candidate_cell": {
+                "metric": METRIC,
+                "participant": "P01",
+                "session": "Session 03",
+            },
             "report_candidate": REPORT_VALUE,
             "report_pdf_page_1based": 6,
             "candidate_status": "unverified rounded report value; not a source correction",
@@ -149,7 +156,8 @@ def figure(output: Path, result: dict) -> None:
             match = correlation.loc[
                 (correlation["scenario"] == scenario)
                 & (correlation["feature_a"] == f"{METRIC}: {first}")
-                & (correlation["feature_b"] == f"{METRIC}: {second}"), "rho"
+                & (correlation["feature_b"] == f"{METRIC}: {second}"),
+                "rho",
             ]
             pairs.append(float(match.iloc[0]))
         axes[1].scatter(
@@ -188,12 +196,10 @@ def figure(output: Path, result: dict) -> None:
 
 
 def build(output: Path, result: dict, *, data_root: str | Path | None = None) -> None:
-    destinations = {
-        name: paths.output_path(output, name, data_root=data_root) for name in OUTPUT_NAMES
-    }
+    destinations = paths.output_paths(
+        output, OUTPUT_NAMES, data_root=data_root, flat=True
+    )
     root = paths.resolve_output_root(output, data_root=data_root)
-    if any(path.parent != root for path in destinations.values()):
-        raise ValueError("sensitivity outputs must remain in one flat directory")
     root.mkdir(parents=True, exist_ok=True)
     for name, table in result["tables"].items():
         table.to_csv(destinations[name], index=False)
@@ -242,7 +248,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--data-root", type=Path)
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument(
-        "--check", action="store_true", help="check committed sensitivity results (default)"
+        "--check",
+        action="store_true",
+        help="check committed sensitivity results (default)",
     )
     mode.add_argument(
         "--output-root", type=Path, help="write sensitivity outputs outside source data"

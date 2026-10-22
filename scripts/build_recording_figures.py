@@ -26,6 +26,7 @@ from mms import io, paths  # noqa: E402
 NAMES = ("hr", "ibi", "sed")
 COLORS = ("#183b62", "#16888c", "#b05d38")
 FIGURE_NAMES = ("recorded-heart.png", "recorded-interval.png", "recorded-pupil.png")
+OUTPUT_NAMES = (*FIGURE_NAMES, "recording-figures.toml")
 
 
 def samples(frame: pd.DataFrame, column: str, *, quality: str | None = None) -> dict:
@@ -99,7 +100,18 @@ def provenance(data: dict, data_root: Path) -> dict:
     }
 
 
-def render(output: Path, data: dict, info: dict) -> None:
+def render(
+    output: Path,
+    data: dict,
+    info: dict,
+    *,
+    data_root: str | Path | None = None,
+) -> None:
+    destinations = paths.output_paths(
+        output, OUTPUT_NAMES, data_root=data_root, flat=True
+    )
+    output = paths.resolve_output_root(output, data_root=data_root)
+    output.mkdir(parents=True, exist_ok=True)
     font_directory = Path("/System/Library/Fonts/Supplemental")
     for filename in ("Times New Roman.ttf", "Times New Roman Bold.ttf"):
         font = font_directory / filename
@@ -170,10 +182,17 @@ def render(output: Path, data: dict, info: dict) -> None:
                 )
             elif name == "pupil":
                 ax.scatter(
-                    values["time_s"], readings, s=3, alpha=0.45, color=color, label=label
+                    values["time_s"],
+                    readings,
+                    s=3,
+                    alpha=0.45,
+                    color=color,
+                    label=label,
                 )
             else:
-                ax.plot(values["time_s"], readings, linewidth=1.3, color=color, label=label)
+                ax.plot(
+                    values["time_s"], readings, linewidth=1.3, color=color, label=label
+                )
         ax.set(
             xlabel=unit if name == "interval" else "Recording-relative time (s)",
             ylabel="Cumulative fraction of readings" if name == "interval" else unit,
@@ -183,15 +202,15 @@ def render(output: Path, data: dict, info: dict) -> None:
         ax.legend(frameon=False, fontsize=14)
         filename = f"recorded-{name}.png"
         fig.savefig(
-            output / filename,
+            destinations[filename],
             dpi=100,
             metadata={
                 "Description": json.dumps({**info, "panel": name}, sort_keys=True)
             },
         )
         plt.close(fig)
-        hashes[filename] = digest(output / filename)
-    (output / "recording-figures.toml").write_text(
+        hashes[filename] = digest(destinations[filename])
+    destinations["recording-figures.toml"].write_text(
         metadata_text({**info, "figures": hashes})
     )
 
@@ -248,11 +267,7 @@ def main(argv: list[str] | None = None) -> int:
         verify(ROOT / "outputs", info)
         action = "Verified"
     else:
-        for name in (*FIGURE_NAMES, "recording-figures.toml"):
-            paths.output_path(args.output_root, name, data_root=root)
-        output = paths.resolve_output_root(args.output_root, data_root=root)
-        output.mkdir(parents=True, exist_ok=True)
-        render(output, data, info)
+        render(args.output_root, data, info, data_root=root)
         action = "Wrote"
     print(f"{action} {len(data)} recording panels for case-study Session 1.")
     return 0

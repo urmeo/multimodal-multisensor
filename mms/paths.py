@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+from collections.abc import Iterable
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -133,7 +134,16 @@ def resolve_output_root(
         )
     if output.exists() and not output.is_dir():
         raise ValueError("output_root must be a directory")
+    _require_directory(output.parent)
     return output
+
+
+def _require_directory(directory: Path) -> None:
+    for parent in (directory, *directory.parents):
+        if parent.exists():
+            if not parent.is_dir():
+                raise ValueError("output parent must be a directory")
+            return
 
 
 def output_path(
@@ -145,11 +155,12 @@ def output_path(
     """Reject traversal, symlink and hard-link aliases before writing."""
     root = resolve_output_root(output_root, data_root=data_root)
     relative = Path(relative)
-    if relative.is_absolute() or ".." in relative.parts:
+    if not relative.parts or relative.is_absolute() or ".." in relative.parts:
         raise ValueError("output paths must be relative and contained in output_root")
     destination = _resolve(root / relative)
     if destination != root and root not in destination.parents:
         raise ValueError("output path escapes output_root")
+    _require_directory(destination.parent)
     if not destination.exists():
         return destination
     if not destination.is_file():
@@ -168,3 +179,39 @@ def output_path(
         ):
             raise ValueError("output path aliases a source observation")
     return destination
+
+
+def output_paths(
+    output_root: str | Path,
+    relatives: Iterable[str | Path],
+    *,
+    data_root: str | Path | None = None,
+    flat: bool = False,
+) -> dict[str | Path, Path]:
+    """Validate every destination and reject collisions before an export starts."""
+    if isinstance(relatives, (str, Path)):
+        raise ValueError("output names must be an iterable of relative file paths")
+    root = resolve_output_root(output_root, data_root=data_root)
+    destinations = {}
+    resolved = set()
+    identities = set()
+    for relative in relatives:
+        destination = output_path(root, relative, data_root=data_root)
+        if flat and destination.parent != root:
+            raise ValueError("outputs must remain in one flat output directory")
+        if destination in resolved or any(
+            other in destination.parents or destination in other.parents
+            for other in resolved
+        ):
+            raise ValueError(
+                "output paths must be distinct files without parent collisions"
+            )
+        if destination.exists():
+            stat = destination.stat()
+            identity = (stat.st_dev, stat.st_ino)
+            if identity in identities:
+                raise ValueError("output paths must be distinct files")
+            identities.add(identity)
+        resolved.add(destination)
+        destinations[relative] = destination
+    return destinations

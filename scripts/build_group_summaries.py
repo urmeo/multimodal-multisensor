@@ -232,10 +232,9 @@ def run(
         for metric, values in original.items()
     }
     frames["filtered_channel_sample_variability.csv"] = pd.DataFrame(records)
-    destinations = {
-        name: paths.output_path(output_root, name, data_root=source)
-        for name in (*frames, "MANIFEST.json")
-    }
+    destinations = paths.output_paths(
+        output_root, (*frames, "MANIFEST.json"), data_root=source, flat=True
+    )
     serialized = json.dumps(manifest, indent=2, allow_nan=False)
     for name, frame in frames.items():
         destination = destinations[name]

@@ -1216,3 +1216,87 @@ def test_notebook_contract(path):
             assert "utc=True" not in cell.source
             assert "tz_localize(None)" not in cell.source
     assert "MMS_OUTPUT_ROOT" in notebook.cells[0].source
+
+
+@pytest.mark.parametrize(
+    "names",
+    [
+        ("result.csv", "result.csv"),
+        ("result.csv", "./result.csv"),
+        ("result", "result/nested.csv"),
+        ("result/nested.csv", "result"),
+    ],
+)
+def test_output_batch_rejects_colliding_planned_paths(source_dataset, tmp_path, names):
+    output = tmp_path / "export"
+    with pytest.raises(ValueError, match="distinct files"):
+        paths.output_paths(output, names, data_root=source_dataset)
+    assert not output.exists()
+
+
+@pytest.mark.parametrize("alias", ["symlink", "hardlink"])
+def test_output_batch_rejects_aliases_between_outputs(source_dataset, tmp_path, alias):
+    output = tmp_path / "export"
+    output.mkdir()
+    original = output / "first.csv"
+    original.write_text("previous results\n")
+    duplicate = output / "second.csv"
+    if alias == "symlink":
+        duplicate.symlink_to(original)
+    else:
+        os.link(original, duplicate)
+    before = file_hashes(output)
+    with pytest.raises(ValueError, match="distinct files"):
+        paths.output_paths(
+            output, ("first.csv", "second.csv"), data_root=source_dataset
+        )
+    assert file_hashes(output) == before
+
+
+@pytest.mark.parametrize("relative", ["", "."])
+def test_output_path_requires_a_filename(source_dataset, tmp_path, relative):
+    with pytest.raises(ValueError, match="relative and contained"):
+        paths.output_path(tmp_path / "export", relative, data_root=source_dataset)
+
+
+def test_output_batch_rejects_a_bare_filename(source_dataset, tmp_path):
+    with pytest.raises(ValueError, match="iterable"):
+        paths.output_paths(tmp_path / "export", "result.csv", data_root=source_dataset)
+
+
+@pytest.mark.parametrize("alias", ["hardlink", "nested symlink"])
+def test_summary_output_alias_fails_before_replacing_results(
+    source_dataset, tmp_path, alias
+):
+    output = tmp_path / "summary"
+    output.mkdir()
+    first = output / "HRV_SDNN_P02_consistency.csv"
+    first.write_text("previous results\n")
+    if alias == "hardlink":
+        os.link(first, output / "Pupil_Dilation_STD_P02_consistency.csv")
+        expected = "distinct files"
+    else:
+        (output / "MANIFEST.json").symlink_to(output / "nested" / "MANIFEST.json")
+        expected = "one flat output directory"
+    before = file_hashes(tmp_path)
+    with pytest.raises(ValueError, match=expected):
+        build_group_summaries.run(source_dataset, output)
+    assert file_hashes(tmp_path) == before
+
+
+def test_shift_file_valued_late_parent_fails_before_writing(source_dataset, tmp_path):
+    output = tmp_path / "shifted"
+    output.mkdir()
+    (output / "individual").write_text("previous results\n")
+    before = file_hashes(tmp_path)
+    with pytest.raises(ValueError, match="parent must be a directory"):
+        deidentify_timestamps.run(source_dataset, output_root=output)
+    assert file_hashes(tmp_path) == before
+
+
+def test_output_root_rejects_a_file_valued_parent(source_dataset, tmp_path):
+    parent = tmp_path / "file"
+    parent.write_text("preserved\n")
+    with pytest.raises(ValueError, match="parent must be a directory"):
+        paths.resolve_output_root(parent / "export", data_root=source_dataset)
+    assert parent.read_text() == "preserved\n"

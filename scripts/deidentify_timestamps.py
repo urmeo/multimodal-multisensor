@@ -120,12 +120,11 @@ def run(
         if columns:
             prepared.append((source.relative_to(root), shifted, columns))
     destinations = (
-        [
-            paths.output_path(output_root, relative, data_root=root)
-            for relative, _, _ in prepared
-        ]
+        paths.output_paths(
+            output_root, (relative for relative, _, _ in prepared), data_root=root
+        )
         if output_root is not None
-        else []
+        else {}
     )
     print(
         f"Validated {len(paths.SOURCE_CSV_RELATIVE)} source CSVs; "
@@ -144,7 +143,8 @@ def run(
     if output_root is None:
         print("Read-only validation; no files written.")
         return 0
-    for (_, shifted, _), destination in zip(prepared, destinations, strict=True):
+    for relative, shifted, _ in prepared:
+        destination = destinations[relative]
         destination.parent.mkdir(parents=True, exist_ok=True)
         shifted.to_csv(destination, index=False)
     print(f"Wrote {len(destinations)} CSV copies; source inputs unchanged.")
