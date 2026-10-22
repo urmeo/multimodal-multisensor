@@ -4,7 +4,7 @@ Eye, cardiac and questionnaire data from a study of 10 adults across three weekl
 
 ![Historical analysis workflow. The analysis code has been removed; recordings and saved results remain.](images/pipeline.svg)
 
-[View full size](images/pipeline.svg) · [Historical Figma design](https://www.figma.com/board/hexcUfwWED4MIu7wjxmWrU/) · [Design files](design/README.md)
+[View full size](images/pipeline.svg) · [Historical Figma design](https://www.figma.com/board/hexcUfwWED4MIu7wjxmWrU/) · [Pipeline source](pipeline.mmd)
 
 The release includes 24 raw sensor streams. GSR collection was attempted; facial integration was unfinished. The questionnaires include HADS, STAI-S, STAI-T, BFI-10 and the Fear Questionnaire.
 
