@@ -111,13 +111,13 @@ def command(module, *args):
     )
 
 
-def test_explicit_dataset_root_and_code_only_missing_data(
+def test_explicit_dataset_root_and_missing_checkout_data(
     dataset, monkeypatch, tmp_path
 ):
     assert len(io.load_ibi(1, data_root=dataset)) == 4
     assert io.load_raw("ibi", data_root=dataset)["ibi"].tolist() == [800, 810]
-    monkeypatch.setattr(paths, "DATA", tmp_path / "wheel-without-data")
-    with pytest.raises(FileNotFoundError, match="Wheels contain code only.*data_root"):
+    monkeypatch.setattr(paths, "DATA", tmp_path / "missing-data")
+    with pytest.raises(FileNotFoundError, match="Dataset directory is absent.*data_root"):
         io.load_ibi(1)
 
 

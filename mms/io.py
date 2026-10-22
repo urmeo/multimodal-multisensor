@@ -42,8 +42,8 @@ def _suffix(session: int | None) -> str:
 def _read(path: Path, *, sep: str = ",") -> pd.DataFrame:
     if not path.is_file():
         raise FileNotFoundError(
-            f"Dataset file is absent: {path}. Wheels contain code only; "
-            "supply data_root=PATH to the separately obtained dataset."
+            f"Dataset file is absent: {path}. Use the complete repository data "
+            "or supply data_root=PATH to another dataset."
         )
     return pd.read_csv(path, sep=sep)
 

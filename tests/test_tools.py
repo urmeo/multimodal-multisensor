@@ -28,6 +28,43 @@ def test_notebook_verifier_rejects_an_empty_analysis_folder(tmp_path, monkeypatc
         verify_notebooks.main([])
 
 
+@pytest.mark.parametrize("existing_path", [None, "another-project"])
+def test_notebook_verifier_imports_checkout_without_site_packages(
+    tmp_path, monkeypatch, existing_path
+):
+    (tmp_path / "data").mkdir()
+    shutil.copytree(
+        ROOT / "mms", tmp_path / "mms", ignore=shutil.ignore_patterns("__pycache__")
+    )
+    for folder in verify_notebooks.FOLDERS:
+        destination = tmp_path / folder
+        destination.mkdir(parents=True)
+        (destination / "example.ipynb").write_text("{}")
+    if existing_path is None:
+        monkeypatch.delenv("PYTHONPATH", raising=False)
+    else:
+        monkeypatch.setenv("PYTHONPATH", existing_path)
+    monkeypatch.setattr(verify_notebooks, "ROOT", tmp_path)
+    run = subprocess.run
+
+    def check_import(command, *, cwd, env, check):
+        if existing_path:
+            assert env["PYTHONPATH"].endswith(os.pathsep + existing_path)
+        result = run(
+            [sys.executable, "-S", "-c", "from mms.paths import ROOT; print(ROOT)"],
+            cwd=cwd / "notebooks/case-study",
+            env=env,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        assert result.stdout.strip() == str(tmp_path)
+        return result
+
+    monkeypatch.setattr(verify_notebooks.subprocess, "run", check_import)
+    assert verify_notebooks.main([]) == 0
+
+
 @pytest.mark.parametrize(
     "script", ["build_figures", "verify_notebooks", "normalize_kernelspec"]
 )

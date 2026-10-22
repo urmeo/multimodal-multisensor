@@ -72,15 +72,12 @@ def _resolve(path: Path) -> Path:
 
 
 def resolve_data_root(data_root: str | Path | None = None) -> Path:
-    """Folder containing case-study, individual and group_results.
-
-    Wheels contain code only. A caller must supply the separately obtained data.
-    """
+    """Use checkout data or an explicit dataset with the same folder structure."""
     root = _resolve(DATA if data_root is None else Path(data_root))
     if not root.is_dir():
         raise FileNotFoundError(
-            f"Dataset directory is absent: {root}. Wheels contain code only; "
-            "supply data_root=PATH containing case-study/individual/group_results."
+            f"Dataset directory is absent: {root}. Use the complete repository data "
+            "or supply data_root=PATH containing case-study/individual/group_results."
         )
     return root
 

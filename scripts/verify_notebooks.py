@@ -43,7 +43,11 @@ def main(argv: list[str] | None = None) -> int:
                 shutil.copy2(source, target)
                 notebooks.append(target)
         environment = os.environ.copy()
+        python_path = [str(ROOT)]
+        if environment.get("PYTHONPATH"):
+            python_path.append(environment["PYTHONPATH"])
         environment.update(
+            PYTHONPATH=os.pathsep.join(python_path),
             MMS_DATA_ROOT=str(scratch / "data"),
             MMS_OUTPUT_ROOT=str(scratch / "outputs"),
             IPYTHONDIR=str(scratch / "ipython"),
