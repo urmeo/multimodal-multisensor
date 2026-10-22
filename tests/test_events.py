@@ -143,6 +143,32 @@ def test_blink_duration_bounds_rejected():
         )
 
 
+@pytest.mark.parametrize(
+    "duration,accepted",
+    [
+        pytest.param(1 / 16, False, id="below-minimum"),
+        pytest.param(1 / 8, True, id="minimum"),
+        pytest.param(1 / 4, True, id="inside"),
+        pytest.param(3 / 8, True, id="maximum"),
+        pytest.param(1 / 2, False, id="above-maximum"),
+    ],
+)
+def test_blink_duration_filter_includes_both_bounds(duration, accepted):
+    result = blink_events(
+        [0, 1, 1 + duration],
+        [False, True, False],
+        valid=[True] * 3,
+        min_duration_s=1 / 8,
+        max_duration_s=3 / 8,
+        max_gap_s=1,
+    )
+    assert result.duration_s.tolist() == pytest.approx([duration] if accepted else [])
+    if accepted:
+        assert result.start_s.tolist() == [1]
+        assert result.end_s.tolist() == [1 + duration]
+        assert result.n_samples.tolist() == [1]
+
+
 def test_pupil_samples_keep_index_and_exclude_nonfinite_nonpositive_quality():
     frame = pd.DataFrame(
         {
