@@ -1,18 +1,18 @@
 # Multimodal-Multisensor
 
-Eye, cardiac and questionnaire data from a study of 10 adults across three weekly sessions. The release includes available recordings, group tables, saved plots and reports.
+Eye, cardiac and questionnaire data from a study of 10 adults across three weekly sessions. The release includes available recordings, saved results and reports.
 
-![Historical analysis workflow. The analysis code has been removed; recordings and saved results remain.](images/pipeline.svg)
+**Keywords:** Eye tracking · Cardiac intervals · Questionnaires · Session reliability
 
-[View full size](images/pipeline.svg) · [Historical Figma design](https://www.figma.com/board/hexcUfwWED4MIu7wjxmWrU/) · [Pipeline source](pipeline.mmd)
+## Pipeline
 
-The release includes 24 raw sensor streams. GSR collection was attempted; facial integration was unfinished. The questionnaires include HADS, STAI-S, STAI-T, BFI-10 and the Fear Questionnaire.
+![Historical workflow. The analysis code has been removed; recordings and saved results remain.](images/pipeline.svg)
 
-The shared analysis package and its scripts have been removed. Saved results remain available, but this checkout cannot recalculate them. The [last version with analysis code](https://github.com/urmeo/multimodal-multisensor/tree/0f2b1cc55409b1b68bc9ee52341382263fa4559e) remains in Git history.
+[Full size](images/pipeline.svg) · [Pipeline source](pipeline.mmd) · [Figma: earlier design](https://www.figma.com/board/hexcUfwWED4MIu7wjxmWrU/)
 
-## Build the documentation
+## Run
 
-Use Python 3.11 or 3.12. Run from the repository root:
+Run from the repository root with Python 3.11 or 3.12. These commands build the documentation; analysis code and notebooks were removed.
 
 ```bash
 python -m venv .venv
@@ -23,32 +23,60 @@ python scripts/build_docs.py
 python -m http.server 8000 --directory build/docs
 ```
 
-Open `http://localhost:8000`. The build uses Mistune to render Markdown into `build/docs`. The tests check documentation links, output boundaries and recovery from failed builds.
+Open <http://localhost:8000>.
 
-## Saved results and limitations
+## Results
 
-The released group tables gave the following ICC(1,1) estimates for the session-to-session reliability of within-session standard deviations. Each estimate used 10 participant rows across three sessions and a 95% confidence interval.
+**Study:** 10 adults × 3 sessions. **Release:** 24 raw sensor streams.
 
-| Within-session standard deviation | ICC | 95% interval |
+Saved ICC(1,1) estimates describe the reliability of within-session standard deviations in the released group tables.
+
+| Within-session standard deviation | ICC(1,1) | 95% interval |
 | :--- | ---: | :--- |
 | Interval samples | 0.22 | −0.13 to 0.66 |
 | Pupil diameter | 0.45 | 0.07 to 0.79 |
 | Response duration | 0.61 | 0.25 to 0.87 |
 
-![Saved ICC estimates and 95 percent confidence intervals](outputs/reliability.png)
+Descriptive results; no diagnostic validation. Most participant summaries lack raw-data mappings. Clock alignment and unique-beat timing are unverified. [Methods and limits](docs/FIGURES.md) · [Report corrections](docs/REPORT_STATUS.md).
 
-These calculations describe the released tables. The small sample and wide intervals do not establish diagnostic accuracy or stable traits. The [saved Spearman correlation plot](outputs/correlation.png) is also descriptive.
+![Session reliability: 10 participant rows, three sessions and 95 percent intervals](outputs/reliability.png)
 
-- Repeated cardiac interval samples are not verified unique beats. Cross-stream clock alignment is unverified.
-- Two equality patterns in the group tables are suspected duplicates. Most participant rows cannot be reconstructed from the available raw recordings.
-- The case-study summaries numerically match group row P02. That match does not independently confirm participant identity.
+![Descriptive Spearman correlations between released session summaries](outputs/correlation.png)
 
-The [figure notes](docs/FIGURES.md) record source hashes, filters and historical images, including photographs of the experimental setup.
+![Sensitivity to the unresolved P01 session-3 interval value; alternatives do not establish the correct source value](outputs/sensitivity/sensitivity.png)
 
-## Documentation and data use
+**Case-study Session 1**
 
-[Browse the published documentation](https://urmeo.github.io/multimodal-multisensor/).
+![Reported heart-rate samples, separated by channel](outputs/recorded-heart.png)
 
-The original [technical report](docs/reports/Multimodal%20Multisensor%20Technical%20Report.pdf), [thesis](docs/reports/Thesis%20Report.pdf) and [proposed protocol](docs/reports/CYPSY_Poster.pdf) are preserved. Read the [report corrections](docs/REPORT_STATUS.md) alongside them.
+![Sampled interval distributions, including repeated readings](outputs/recorded-interval.png)
 
-The author records consent for sharing and session photographs. Dates, device labels, responses and recognizable photos remain in the release; participant codes do not make it anonymous. Review the [data use and consent notes](DATA_ETHICS.md) before reuse. Code uses the [MIT license](LICENSE). Cite the data using [CITATION.cff](CITATION.cff).
+![Pupil readings with the documented quality filter](outputs/recorded-pupil.png)
+
+## Tech Stack
+
+| Scope | Tools |
+| :--- | :--- |
+| Current documentation | Python 3.11/3.12 · Mistune · pytest · HTML/CSS |
+| [Archived analysis](https://github.com/urmeo/multimodal-multisensor/tree/0f2b1cc55409b1b68bc9ee52341382263fa4559e) | NumPy · pandas · SciPy · Matplotlib · scikit-learn |
+
+## Roadmap
+
+These steps require source evidence that is currently unavailable.
+
+- Document participant-to-recording mappings under the recorded consent.
+- Reassess P01 if the original export becomes available.
+- Verify acquisition timezones and clock synchronization.
+- Validate unique-beat timestamps and record interval corrections.
+- Confirm eye-openness units and polarity with labeled calibration frames.
+
+## References
+
+1. [Technical report](docs/reports/Multimodal%20Multisensor%20Technical%20Report.pdf)
+2. [Thesis](docs/reports/Thesis%20Report.pdf)
+3. [Proposed protocol](docs/reports/CYPSY_Poster.pdf)
+4. [Dataset citation](CITATION.cff)
+
+## License
+
+[Code: MIT](LICENSE) · [Data, image and questionnaire terms](DATA_ETHICS.md)
