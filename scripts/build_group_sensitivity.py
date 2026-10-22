@@ -224,20 +224,30 @@ def build(output: Path, result: dict, *, data_root: str | Path | None = None) ->
 
 def verify(output: Path, result: dict) -> None:
     provenance = json.loads((output / "provenance.json").read_text())
+    if not isinstance(provenance, dict):
+        raise ValueError("sensitivity provenance must be a JSON object")
     if (
         provenance.get("source_sha256") != result["source_sha256"]
         or provenance.get("settings") != result["settings"]
         or provenance.get("source_modified") is not False
     ):
-        raise ValueError("sensitivity provenance differs from current sources or settings")
-    if provenance.get("figure_sha256") != {"sensitivity.png": digest(output / "sensitivity.png")}:
+        raise ValueError(
+            "sensitivity provenance differs from current sources or settings"
+        )
+    if provenance.get("figure_sha256") != {
+        "sensitivity.png": digest(output / "sensitivity.png")
+    }:
         raise ValueError("sensitivity figure bytes differ from provenance")
     for name, expected in result["tables"].items():
         actual = pd.read_csv(output / name)
         try:
             pd.testing.assert_frame_equal(
-                actual, expected, check_dtype=False, check_exact=False,
-                rtol=1e-9, atol=1e-12,
+                actual,
+                expected,
+                check_dtype=False,
+                check_exact=False,
+                rtol=1e-9,
+                atol=1e-12,
             )
         except AssertionError as error:
             raise ValueError(f"sensitivity results differ: {name}") from error

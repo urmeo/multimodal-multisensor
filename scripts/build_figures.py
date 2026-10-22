@@ -103,7 +103,9 @@ def verify(output: Path, rows: list[dict], corr: pd.DataFrame, hashes: dict) -> 
             equal_nan=True,
         ):
             raise ValueError("figure values differ")
-    if set(metadata["figure"]) != set(FIGURE_NAMES):
+    if not isinstance(metadata.get("figure"), dict) or set(metadata["figure"]) != set(
+        FIGURE_NAMES
+    ):
         raise ValueError("figure hash inventory must contain both current PNGs")
     for name, expected_hash in metadata["figure"].items():
         if digest(output / name) != expected_hash:

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import csv
 import json
 import os
 from itertools import combinations
@@ -1041,3 +1042,47 @@ def test_recording_writer_creates_a_verified_output_set(tmp_path):
     assert {path.name for path in output.iterdir()} == set(
         recording_figures.OUTPUT_NAMES
     )
+
+
+@pytest.mark.parametrize(
+    "invalid", [[], ["reliability.png", "correlation.png"], "hashes"]
+)
+def test_aggregate_rejects_non_table_figure_metadata(
+    tmp_path, monkeypatch, capsys, invalid
+):
+    output = tmp_path / "outputs"
+    output.mkdir()
+    rows, corr, hashes = [], pd.DataFrame(), {"fixture": "temporary-source-hash"}
+    with (output / "figures.csv").open("w", newline="") as stream:
+        writer = csv.DictWriter(stream, fieldnames=("metric", "row", "column", "value"))
+        writer.writeheader()
+    metadata = [f"figure = {json.dumps(invalid)}", "[method]"]
+    metadata.extend(
+        f"{key} = {json.dumps(value)}" for key, value in build_figures.METHODS.items()
+    )
+    metadata.extend(["[source]", 'fixture = "temporary-source-hash"'])
+    (output / "figures.toml").write_text("\n".join(metadata) + "\n")
+    with pytest.raises(ValueError, match="figure hash inventory"):
+        build_figures.verify(output, rows, corr, hashes)
+    monkeypatch.setattr(build_figures, "ROOT", tmp_path)
+    monkeypatch.setattr(
+        build_figures, "calculate", lambda data_root=None: (rows, corr, hashes)
+    )
+    assert build_figures.main([]) == 1
+    assert "figure hash inventory" in capsys.readouterr().err
+
+
+@pytest.mark.parametrize("invalid", [[], None, "provenance"])
+def test_sensitivity_rejects_non_object_provenance(
+    tmp_path, monkeypatch, capsys, invalid
+):
+    output = tmp_path / "outputs" / "sensitivity"
+    output.mkdir(parents=True)
+    (output / "provenance.json").write_text(json.dumps(invalid) + "\n")
+    result = {"source_sha256": {}, "settings": {}, "tables": {}}
+    with pytest.raises(ValueError, match="must be a JSON object"):
+        sensitivity.verify(output, result)
+    monkeypatch.setattr(sensitivity, "ROOT", tmp_path)
+    monkeypatch.setattr(sensitivity, "calculate", lambda data_root=None: result)
+    assert sensitivity.main([]) == 1
+    assert "must be a JSON object" in capsys.readouterr().err
