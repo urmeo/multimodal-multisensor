@@ -1,5 +1,7 @@
 # Historical runs and candidate gaze events
 
+The `sensor_data`, `scripts.derive` and `scripts.fixations` modules named in these notes are absent from this checkout. See [Run the analysis](../README.md#run-the-analysis) for supported commands.
+
 `data/sed_fix.csv` contains historical low-movement runs. The function
 `scripts.derive.detect_legacy_runs` reproduces them from gaze displacement,
 without checking gaze quality, maximum time gaps or minimum duration. The old
@@ -102,17 +104,7 @@ events = detect_events(
 )
 ```
 
-The CLI exports a separate event table and a JSON sidecar. For example:
-
-```sh
-python -m scripts.fixations \
-  --data-dir data \
-  --output outputs/candidate_events.csv \
-  --displacement-threshold 0.01 \
-  --min-quality 0.5 \
-  --max-gap-seconds 0.05 \
-  --min-duration-seconds 0.1
-```
+The described CLI exports a separate event table and a JSON sidecar.
 
 The table has one row per candidate, with `event_id`, inclusive zero-based
 `start_row` and `end_row` positions, `start_time`, `end_time`, `duration`, and
@@ -138,12 +130,6 @@ hard links. Exports cannot overwrite `sed_fix.csv` or any other protected source
 file. Choosing an existing separate output path replaces that export.
 
 ## Checks
-
-Run the synthetic and CLI tests with:
-
-```sh
-python -m pytest tests/test_fixations.py
-```
 
 The suite covers the exact 99-second historical failure, invalid and low quality,
 nonfinite and invalid vectors, zero vectors, long gaps, equal and decreasing

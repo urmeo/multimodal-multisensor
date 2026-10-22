@@ -6,11 +6,6 @@ The [heart-rate](../outputs/recorded-heart.png), [interval](../outputs/recorded-
 
 Heart rate retains finite positive readings with confidence 1. Intervals retain finite positive readings, including repeated samples. Pupils retain finite positive readings with `0.5 < pupilQ <= 1`. Channels stay separate. Each stream uses its own recording-relative time in seconds; clocks are not aligned across streams. Reported units are bpm, ms and mm. Calibration and unique-beat provenance are unverified.
 
-```sh
-python -m scripts.build_recording_figures --check
-python -m scripts.build_recording_figures --output-root outputs
-```
-
 `outputs/recording-figures.toml` records source hashes, a hash of the exact selected values, filters, units, counts and image hashes. Check mode writes nothing. These plots do not establish anxiety categories or validate the ten-person group tables.
 
 The [session photograph](../images/data_collection_session.jpg) appears in thesis Annex E, PDF page 46, printed page 49. Its caption explicitly records photo consent. The [experimental setup photograph](../images/experimental_setup.jpg) is also preserved. Source image bytes are unchanged.
@@ -21,12 +16,7 @@ The README's [reliability plot](../outputs/reliability.png) and the [correlation
 
 Most group rows cannot be traced to the available raw recordings. The calculations reproduce the released tables; they do not independently verify the cohort measurements.
 
-`outputs/figures.csv` records calculated values. `outputs/figures.toml` records source hashes, methods and figure hashes. Run these commands from the repository root:
-
-```sh
-python -m scripts.build_figures --check
-python -m scripts.build_figures --output-root outputs
-```
+`outputs/figures.csv` records calculated values. `outputs/figures.toml` records source hashes, methods and figure hashes. See [Run the analysis](../README.md#run-the-analysis) for checks and export commands.
 
 ## Historical snapshots
 

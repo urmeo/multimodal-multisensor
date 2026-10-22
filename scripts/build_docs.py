@@ -20,12 +20,7 @@ import mistune
 REPOSITORY_URL = "https://github.com/urmeo/multimodal-multisensor"
 PAGES = (
     "README.md",
-    "CONTRIBUTING.md",
-    "SECURITY.md",
-    "DATA_PROVENANCE.md",
     "DATA_ETHICS.md",
-    "DATA_LICENSE.md",
-    "NOTICE.md",
     "docs/FIGURES.md",
     "docs/REPORT_STATUS.md",
 )

@@ -1,5 +1,5 @@
 cff-version: 1.2.0
-message: "Cite this dataset; recorded release terms are in DATA_LICENSE.md. Code is MIT."
+message: "Cite this dataset; recorded release terms are in DATA_ETHICS.md. Code is MIT."
 type: dataset
 title: "Multimodal-Multisensor: Eye, Cardiac and Questionnaire Recordings Across Three Sessions"
 authors:

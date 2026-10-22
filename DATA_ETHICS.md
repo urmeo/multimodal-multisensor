@@ -21,19 +21,29 @@ Tables use participant codes instead of names. The release still contains identi
 
 ## Timestamp copies
 
-```sh
-python -m scripts.deidentify_timestamps
-python -m scripts.deidentify_timestamps --output-root /tmp/mms-time-copies
-```
-
-The first command validates all 51 CSVs without writing files. Adding `--output-root` writes copies of CSVs that contain calendar timestamps. Dates shift to a fixed calendar anchor separately for each file and compatible clock domain. Raw TXT, notebooks, reports, media and CSVs without calendar timestamps are not copied or changed.
+The timestamp-copy tool validates all 51 CSVs without writing files by default. Its `--output-root` option writes copies of CSVs that contain calendar timestamps. See [Run the analysis](README.md#run-the-analysis) for commands. Dates shift to a fixed calendar anchor separately for each file and compatible clock domain. Raw TXT, notebooks, reports, media and CSVs without calendar timestamps are not copied or changed.
 
 The tool validates every CSV before writing any copies. It never overwrites source files and rejects malformed nonempty dates. Logs omit original dates and offsets.
 
 Shifting dates within a file preserves differences between compatible timestamps in that file. It does not establish synchronization across streams. The copies still contain sensitive responses and measurements; they are not anonymous.
 
+## Rights and attribution
+
+| Material | Terms |
+| :--- | :--- |
+| Code and notebooks | [MIT](LICENSE) |
+| Author-owned data and figures | Recorded [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/legalcode.en) grant; retain attribution, cite [CITATION.cff](CITATION.cff) and identify changes |
+| HADS wording and screenshots | GL Assessment; [permission process](https://www.gl-assessment.co.uk/policies/permissions/) |
+| STAI-S/STAI-T wording, translations and screenshots | Mind Garden; [publication permission](https://www.mindgarden.com/271-mind-garden-forms) and [licensed scope](https://www.mindgarden.com/state-trait-anxiety-inventory-for-adults/28-staiad-transform-survey-hosting.html) |
+| BFI-10/Fear Questionnaire items | Rights depend on the original authors and versions; redistribution permission is not recorded here |
+| Illustrative photos and report graphics | Author or source rights; recognizable session photographs have the consent account described above |
+
+The recorded CC BY 4.0 copyright grant allows sharing and adaptation, including commercial use. It does not grant all privacy or personality rights. The author's recorded research and education intent and consent account remain separate from copyright permission; they are not additional CC BY copyright restrictions.
+
+Repository licenses do not grant permission to republish protected questionnaire wording, translations or answer options. Historical questionnaire versions and response coding remain unverified; establish them before scoring.
+
 ## Use and contact
 
-- Retain attribution and comply with [data terms](DATA_LICENSE.md), consent limits and [instrument rights](NOTICE.md). Do not reidentify participants or make individual decisions from these records.
+- Retain attribution and respect consent and third-party rights. Do not reidentify participants or make individual decisions from these records.
 - Report identifying evidence privately through [Security](https://github.com/urmeo/multimodal-multisensor/security/advisories/new). Public reproducibility issues should use synthetic examples.
 - Send data-subject access, correction, erasure and objection requests to the recorded controller, urme ([@urmeo](https://github.com/urmeo)), through a private channel.

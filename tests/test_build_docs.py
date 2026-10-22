@@ -66,7 +66,7 @@ def test_nested_pages_assets_and_encoded_links(repository):
     assert "<table>" in (output / "index.html").read_text()
     assert (output / image.relative_to(repository)).read_bytes() == image.read_bytes()
     assert (output / report.relative_to(repository)).read_bytes() == report.read_bytes()
-    assert len(list(output.rglob("*.html"))) == 9
+    assert len(list(output.rglob("*.html"))) == 4
     build_docs.validate_site(output)
 
 

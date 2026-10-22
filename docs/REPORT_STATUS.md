@@ -37,10 +37,7 @@ The report value is rounded and unverified. Neither alternative establishes the 
 
 [ICC results](../outputs/sensitivity/icc.csv) · [Correlations](../outputs/sensitivity/correlations.csv) · [Omnibus tests](../outputs/sensitivity/omnibus.csv) · [Paired tests](../outputs/sensitivity/paired.csv) · [Sources and settings](../outputs/sensitivity/provenance.json)
 
-```sh
-python -m scripts.build_group_sensitivity --check
-python -m scripts.build_group_sensitivity --output-root /tmp/mms-sensitivity
-```
+See [Run the analysis](../README.md#run-the-analysis) for sensitivity checks and export commands.
 
 ## Bibliography
 
@@ -52,4 +49,4 @@ The Green/Harlow eye-tracking attribution to *Journal of Anxiety Disorders 73:10
 - **Sample units:** cardiac records contain repeated interval samples without timing for verified unique normal heartbeats. Group response-duration values are within-session standard deviations in seconds.
 - **Source gaps:** equal-value patterns, missing clock metadata and undocumented participant mapping limit independent reconstruction.
 
-[Data contract](../DATA_PROVENANCE.md) · [Figures](FIGURES.md)
+[Data and consent](../DATA_ETHICS.md) · [Figures](FIGURES.md)

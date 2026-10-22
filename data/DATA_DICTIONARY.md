@@ -1,6 +1,6 @@
 # Data dictionary
 
-The data comes from one participant. Raw sensor readings and questionnaire responses cover Session 1; supplied eye summaries cover three sessions. The [schema](../datapackage.json) defines stored types and constraints. [Rights and corrections](../NOTICE.md) apply to every resource.
+The data comes from one participant. Raw sensor readings and questionnaire responses cover Session 1; supplied eye summaries cover three sessions. The tables below describe stored fields and constraints. [Data rights and consent](../DATA_ETHICS.md) apply to every resource.
 
 | Resource | Rows | Scope |
 |---|---:|---|
@@ -13,7 +13,7 @@ The data comes from one participant. Raw sensor readings and questionnaire respo
 
 ## Recording provenance
 
-[RECORDING_PROVENANCE.json](RECORDING_PROVENANCE.json) records each resource's session, observed channels and source SHA-256 hash. It marks acquisition facts unknown where evidence is missing. The package's custom `recordingProvenance` and per-resource `recordingIds` fields link to this manifest.
+[RECORDING_PROVENANCE.json](RECORDING_PROVENANCE.json) records each resource's session, observed channels and source SHA-256 hash. It marks acquisition facts unknown where evidence is missing.
 
 | Recording | Supplied resources / selectors | Acquisition evidence |
 |---|---|---|
@@ -28,9 +28,7 @@ Each stream has device, calibration, clock and aggregation records. Metadata sta
 - `unknown` uses null fields and explains what evidence is missing.
 - `not_applicable` is used for sensor calibration of questionnaire responses.
 - `reproduced` records the known historical `sed` → `sed_fix` transformation and parameters. It does not establish how the original file was produced or validate fixation events.
-- `verified` requires recording-specific evidence and identifying details. See [recording requirements](../NOTICE.md#recording-provenance).
-
-Run `python -m scripts.validate_provenance` to check source hashes, exact row coverage, all observed channels, and recording and evidence references. A successful check confirms the file inventory; it does not validate unknown acquisition facts.
+- `verified` requires recording-specific evidence and identifying details.
 
 ## Clocks
 
