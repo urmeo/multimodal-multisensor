@@ -7,6 +7,7 @@ import hashlib
 import json
 import os
 import shutil
+import stat
 import subprocess
 import sys
 from pathlib import Path
@@ -22,6 +23,7 @@ from scripts import (
     build_figures,
     build_group_summaries,
     deidentify_timestamps,
+    normalize_kernelspec,
     verify_notebooks,
 )
 
@@ -1365,3 +1367,150 @@ def test_shift_keeps_slash_calendar_format_with_empty_clock_cells():
     assert result["datetime"].iloc[0] == "2000/01/01 00:00:00.000000"
     assert pd.isna(result["datetime"].iloc[1])
     assert result["identifier"].tolist() == ["001", "NA"]
+
+
+def _kernel_notebooks(checkout):
+    for folder in verify_notebooks.FOLDERS:
+        path = checkout / folder / "example.ipynb"
+        nbformat.write(
+            nbformat.v4.new_notebook(
+                cells=[nbformat.v4.new_code_cell("value = 1")],
+                metadata={
+                    "kernelspec": {
+                        **normalize_kernelspec.PORTABLE,
+                        "name": "old-kernel",
+                    }
+                },
+            ),
+            path,
+        )
+
+
+@pytest.mark.parametrize(
+    "alias", ["file symlink", "folder symlink", "root symlink", "hardlink"]
+)
+def test_kernel_normalizer_rejects_aliases_before_writing(
+    notebook_checkout, monkeypatch, tmp_path, alias
+):
+    _kernel_notebooks(notebook_checkout)
+    source = notebook_checkout / "notebooks/group/example.ipynb"
+    external = tmp_path / "external.ipynb"
+    if alias == "file symlink":
+        source.rename(external)
+        source.symlink_to(external)
+    elif alias == "folder symlink":
+        directory = source.parent
+        external = tmp_path / "external-group"
+        directory.rename(external)
+        directory.symlink_to(external, target_is_directory=True)
+    elif alias == "root symlink":
+        directory = notebook_checkout / "notebooks"
+        external = tmp_path / "external-notebooks"
+        directory.rename(external)
+        directory.symlink_to(external, target_is_directory=True)
+    else:
+        os.link(source, external)
+    before = file_hashes(tmp_path)
+    monkeypatch.setattr(normalize_kernelspec, "ROOT", notebook_checkout)
+    with pytest.raises(ValueError, match="symlink|hard links"):
+        normalize_kernelspec.main(["--write"])
+    assert file_hashes(tmp_path) == before
+
+
+@pytest.mark.parametrize("folder", verify_notebooks.FOLDERS)
+def test_kernel_normalizer_requires_every_notebook_folder(
+    notebook_checkout, monkeypatch, folder
+):
+    _kernel_notebooks(notebook_checkout)
+    shutil.rmtree(notebook_checkout / folder)
+    before = file_hashes(notebook_checkout)
+    monkeypatch.setattr(normalize_kernelspec, "ROOT", notebook_checkout)
+    with pytest.raises(ValueError, match="No source notebooks"):
+        normalize_kernelspec.main(["--write"])
+    assert file_hashes(notebook_checkout) == before
+
+
+def test_kernel_normalizer_corrects_language_without_changing_cells(
+    notebook_checkout, monkeypatch
+):
+    _kernel_notebooks(notebook_checkout)
+    path = notebook_checkout / "notebooks/case-study/example.ipynb"
+    notebook = nbformat.read(path, as_version=4)
+    notebook.metadata["kernelspec"] = dict(normalize_kernelspec.PORTABLE)
+    notebook.metadata["language_info"] = {"name": "julia"}
+    nbformat.write(notebook, path)
+    path.chmod(0o640)
+    before = file_hashes(notebook_checkout)
+    monkeypatch.setattr(normalize_kernelspec, "ROOT", notebook_checkout)
+    assert normalize_kernelspec.main([]) == 1
+    assert file_hashes(notebook_checkout) == before
+    assert normalize_kernelspec.main(["--write"]) == 0
+    updated = nbformat.read(path, as_version=4)
+    assert updated.metadata["kernelspec"] == normalize_kernelspec.PORTABLE
+    assert updated.metadata["language_info"]["name"] == "python"
+    assert updated.cells == notebook.cells
+    assert stat.S_IMODE(path.stat().st_mode) == 0o640
+    after = file_hashes(notebook_checkout)
+    assert normalize_kernelspec.main([]) == 0
+    assert file_hashes(notebook_checkout) == after
+    assert not list((notebook_checkout / "notebooks").rglob(".*.ipynb"))
+
+
+def test_kernel_normalizer_validates_all_sources_before_writing(
+    notebook_checkout, monkeypatch
+):
+    _kernel_notebooks(notebook_checkout)
+    (notebook_checkout / "notebooks/group/example.ipynb").write_text("invalid JSON")
+    before = file_hashes(notebook_checkout)
+    monkeypatch.setattr(normalize_kernelspec, "ROOT", notebook_checkout)
+    with pytest.raises(ValueError):
+        normalize_kernelspec.main(["--write"])
+    assert file_hashes(notebook_checkout) == before
+
+
+@pytest.mark.parametrize("failure", ["serialization", "replacement"])
+def test_kernel_normalizer_preserves_sources_when_writes_fail(
+    notebook_checkout, monkeypatch, failure
+):
+    _kernel_notebooks(notebook_checkout)
+    before = file_hashes(notebook_checkout)
+    monkeypatch.setattr(normalize_kernelspec, "ROOT", notebook_checkout)
+
+    def fail_write(notebook, stream):
+        stream.write("partial JSON")
+        raise OSError("simulated write failure")
+
+    def fail_replace(source, destination):
+        raise PermissionError("simulated replacement failure")
+
+    if failure == "serialization":
+        monkeypatch.setattr(normalize_kernelspec.nbformat, "write", fail_write)
+    else:
+        monkeypatch.setattr(normalize_kernelspec.os, "replace", fail_replace)
+    with pytest.raises(OSError, match="simulated"):
+        normalize_kernelspec.main(["--write"])
+    assert file_hashes(notebook_checkout) == before
+    assert not list((notebook_checkout / "notebooks").rglob(".*.ipynb"))
+
+
+@pytest.mark.parametrize(
+    "contents",
+    [
+        "[]",
+        "null",
+        "42",
+        '{"nbformat": 4, "nbformat_minor": 5, "metadata": {}, "cells": null}',
+    ],
+)
+def test_kernel_normalizer_rejects_invalid_json_structure(
+    notebook_checkout, monkeypatch, contents
+):
+    _kernel_notebooks(notebook_checkout)
+    invalid = notebook_checkout / "notebooks/group/example.ipynb"
+    invalid.write_text(contents)
+    before = file_hashes(notebook_checkout)
+    monkeypatch.setattr(normalize_kernelspec, "ROOT", notebook_checkout)
+    with pytest.raises(ValueError, match="Invalid notebook structure") as error:
+        normalize_kernelspec.main(["--write"])
+    assert str(invalid) in str(error.value)
+    assert file_hashes(notebook_checkout) == before
