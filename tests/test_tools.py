@@ -109,20 +109,29 @@ def test_figure_check_rejects_incomplete_or_stale_artifacts(tmp_path, corruption
 
 
 @pytest.mark.parametrize("alias", ["source hardlink", "contained nested symlink"])
-def test_all_figure_destinations_validated_before_first_write(tmp_path, alias):
+def test_all_figure_destinations_validated_before_first_write(tmp_path, capsys, alias):
+    data_root = tmp_path / "data"
+    shutil.copytree(ROOT / "data" / "group_results", data_root / "group_results")
+    output = tmp_path / "figures"
+    output.mkdir()
     if alias == "source hardlink":
-        source = ROOT / "data" / "group_results" / "HRV_SDNN.csv"
+        source = data_root / "group_results" / "HRV_SDNN.csv"
         before = source.read_bytes()
-        os.link(source, tmp_path / "figures.toml")
+        os.link(source, output / "figures.toml")
+        expected_error = "aliases a source observation"
     else:
-        (tmp_path / "nested").mkdir()
-        (tmp_path / "reliability.png").symlink_to(
-            tmp_path / "nested" / "reliability.png"
+        (output / "nested").mkdir()
+        (output / "reliability.png").symlink_to(
+            output / "nested" / "reliability.png"
         )
-    assert build_figures.main(["--output-root", str(tmp_path)]) == 1
-    assert not (tmp_path / "correlation.png").exists()
-    assert not (tmp_path / "figures.csv").exists()
+        expected_error = "one flat output directory"
+    assert build_figures.main(
+        ["--data-root", str(data_root), "--output-root", str(output)]
+    ) == 1
+    assert expected_error in capsys.readouterr().err
+    assert not (output / "correlation.png").exists()
+    assert not (output / "figures.csv").exists()
     if alias == "source hardlink":
         assert source.read_bytes() == before
     else:
-        assert not (tmp_path / "nested" / "reliability.png").exists()
+        assert not (output / "nested" / "reliability.png").exists()

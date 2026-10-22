@@ -127,10 +127,15 @@ def test_verification_rejects_stale_results_or_provenance(tmp_path, result, corr
 
 
 def test_all_destinations_are_guarded_before_writing(tmp_path, result):
-    source = paths.DATA / "group_results/HRV_SDNN.csv"
+    data_root = tmp_path / "data"
+    source = data_root / "group_results/HRV_SDNN.csv"
+    source.parent.mkdir(parents=True)
+    source.write_bytes(b"preserved source observation\n")
     before = source.read_bytes()
-    os.link(source, tmp_path / "provenance.json")
+    output = tmp_path / "sensitivity"
+    output.mkdir()
+    os.link(source, output / "provenance.json")
     with pytest.raises(ValueError, match="aliases a source"):
-        sensitivity.build(tmp_path, result)
-    assert not (tmp_path / "icc.csv").exists()
+        sensitivity.build(output, result, data_root=data_root)
+    assert not (output / "icc.csv").exists()
     assert source.read_bytes() == before
