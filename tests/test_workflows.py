@@ -1319,9 +1319,49 @@ def test_notebook_verifier_ignores_host_pytest_and_clock_overrides(
         assert not set(overrides).intersection(env)
         assert command[:3] == [sys.executable, "-m", "pytest"]
         assert "--nbmake" in command and "--collect-only" not in command
-        assert len([argument for argument in command if argument.endswith(".ipynb")]) == 3
+        assert (
+            len([argument for argument in command if argument.endswith(".ipynb")]) == 3
+        )
         return subprocess.CompletedProcess(command, returncode=0)
 
     monkeypatch.setattr(verify_notebooks.subprocess, "run", execute)
     assert verify_notebooks.main([]) == 0
     assert all(os.environ[name] == value for name, value in overrides.items())
+
+
+def test_shift_preserves_every_noncalendar_csv_field(source_dataset, tmp_path):
+    relative = Path("case-study/processed/hr.csv")
+    original = pd.DataFrame(
+        {
+            "datetime": ["2001-02-03T04:05:00Z", "2001-02-03T04:05:01Z"],
+            "identifier": ["001", "002"],
+            "status": ["NA", "null"],
+            "amount": ["01.00", "-0"],
+            "empty": ["", ""],
+            "text": ["a,b", 'He said "yes"'],
+        }
+    )
+    original.to_csv(source_dataset / relative, index=False)
+    before = file_hashes(source_dataset)
+    output = tmp_path / "shifted"
+    assert deidentify_timestamps.run(source_dataset, output_root=output) == 0
+    result = pd.read_csv(output / relative, dtype=str, keep_default_na=False)
+    pd.testing.assert_frame_equal(
+        result.drop(columns="datetime"), original.drop(columns="datetime")
+    )
+    assert io.parse_datetime(result["datetime"]).tolist() == [
+        pd.Timestamp("2000-01-01T00:00:00Z"),
+        pd.Timestamp("2000-01-01T00:00:01Z"),
+    ]
+    assert file_hashes(source_dataset) == before
+
+
+def test_shift_keeps_slash_calendar_format_with_empty_clock_cells():
+    original = pd.DataFrame(
+        {"datetime": ["2001/02/03 04:05:00.000", ""], "identifier": ["001", "NA"]}
+    )
+    result, columns = deidentify_timestamps.shift_frame(original)
+    assert columns == ["datetime"]
+    assert result["datetime"].iloc[0] == "2000/01/01 00:00:00.000000"
+    assert pd.isna(result["datetime"].iloc[1])
+    assert result["identifier"].tolist() == ["001", "NA"]

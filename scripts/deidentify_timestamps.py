@@ -44,6 +44,7 @@ def time_columns_of(frame: pd.DataFrame) -> dict[str, str]:
     for name in frame:
         if name in TIME_COLUMNS or _looks_like_datetime(frame[name]):
             values = frame[name].dropna().astype(str)
+            values = values.loc[values.str.strip().ne("")]
             columns[name] = (
                 "slash"
                 if not values.empty and values.str.match(r"^\d{4}/").all()
@@ -111,7 +112,7 @@ def run(
     root = paths.resolve_data_root(data_root)
     prepared = []
     for source in collect(root):
-        frame = pd.read_csv(source)
+        frame = pd.read_csv(source, dtype=str, keep_default_na=False)
         if not isinstance(frame.index, pd.RangeIndex):
             if frame.index.nlevels != 1 or "source_index" in frame.columns:
                 raise ValueError(f"cannot preserve inferred CSV index: {source.name}")
