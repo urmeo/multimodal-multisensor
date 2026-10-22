@@ -1,6 +1,6 @@
 # Figure provenance
 
-The saved figures and provenance files are retained. Their analysis code is preserved in [snapshot `0f2b1cc`](https://github.com/urmeo/multimodal-multisensor/tree/0f2b1cc55409b1b68bc9ee52341382263fa4559e). The analysis scripts are no longer included in this checkout.
+The saved figures and TOML provenance files are retained. Their analysis code is preserved in [snapshot `0f2b1cc`](https://github.com/urmeo/multimodal-multisensor/tree/0f2b1cc55409b1b68bc9ee52341382263fa4559e). The analysis scripts are no longer included in this checkout.
 
 ## Recording figures
 

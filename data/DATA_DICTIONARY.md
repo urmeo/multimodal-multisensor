@@ -13,22 +13,13 @@ This dictionary covers only the six CSVs directly under `data/`. It does not cov
 
 ## Recording provenance
 
-[RECORDING_PROVENANCE.json](RECORDING_PROVENANCE.json) records each resource's session, observed channels and source SHA-256 hash. It marks acquisition facts unknown where evidence is missing.
-
 | Recording | Supplied resources / selectors | Acquisition evidence |
 |---|---|---|
 | `session-1` | `hr`, `ibi`: channels 0–5; `sed`, derived `sed_fix`: channel 0; `eye_metrics`: `Test 01`; `psych` | Device mappings and calibration unknown; summary lineage/aggregation unknown |
 | `session-2` | `eye_metrics`: `Test 02` | Raw streams and acquisition/calibration logs absent; aggregation unknown |
 | `session-3` | `eye_metrics`: `Test 03` | Raw streams and acquisition/calibration logs absent; aggregation unknown |
 
-Calendar dates are withheld from these six files. Other dataset directories retain calendar timestamps. Session labels preserve recording grouping and do not establish shared clocks. Each `iSensor` identifier is local to its file; matching numbers in HR and IBI do not identify the same physical unit. Summary rows have no channel identifier. Their `source_data` is null, including Session 1, because their relationship to available raw streams has not been reproduced.
-
-Each stream has device, calibration, clock and aggregation records. Metadata states describe the available evidence:
-
-- `unknown` uses null fields and explains what evidence is missing.
-- `not_applicable` is used for sensor calibration of questionnaire responses.
-- `reproduced` records the known historical `sed` → `sed_fix` transformation and parameters. It does not establish how the original file was produced or validate fixation events.
-- `verified` requires recording-specific evidence and identifying details.
+Calendar dates are withheld from these six files. Other dataset directories retain calendar timestamps. Session labels preserve recording grouping and do not establish shared clocks. Each `iSensor` identifier is local to its file; matching numbers in HR and IBI do not identify the same physical unit. Summary rows have no channel identifier. Their relationship to the available raw streams remains unverified, including Session 1.
 
 ## Clocks
 
@@ -38,11 +29,9 @@ Each stream has device, calibration, clock and aggregation records. Metadata sta
 | `eye_metrics` | `Start (s)`, `End (s)` | Earliest start within each `Test`; separate zero per session | Naive; unspecified |
 | `psych` | `Question Start (s)`, `Question Answer (s)` | Earliest questionnaire start | Aware; UTC |
 
-- These six CSVs contain relative time only. No calendar origin, calendar date or between-session gap is published in them or their recording metadata.
+- These six CSVs contain relative time only. They do not provide a calendar origin, calendar date or between-session gap.
 - Sensor streams span about 535 seconds. Their existing offsets and every non-calendar cell are retained. Summary and questionnaire intervals retain their original precision; no cross-resource offset is inferred.
 - Origins differ by resource and session. Equal elapsed readings do not establish synchronization, and the original timezone and acquisition clock mappings remain unverified.
-- The schema's `timeRepresentation`, `timeZone`, `timestampAwareness`, `timestampFields`, `relativeTimeFields`, `relativeTimeOrigin` and `sourceTimeZone` are custom descriptive metadata. Relative seconds have no timezone; `sourceTimeZone` describes the former calendar clock only.
-- The manifest records current hashes and `original_sha256` hashes of byte-exact originals retained privately outside the repository. The recorded conversion preserves all non-calendar cells, row order and row counts; its exporter is not included in this checkout.
 - The six-file conversion does not remove calendar values from other dataset directories, existing Git history, forks, clones or earlier downloads. It does not make sensitive responses or physiological patterns anonymous. See [data ethics](../DATA_ETHICS.md).
 
 ## Heart rate and interval readings
@@ -52,7 +41,7 @@ Each stream has device, calibration, clock and aggregation records. Metadata sta
 | Both | `reltime` | number | 0.001–534.892 s from recording start |
 | Both | `iSensor` | integer | Anonymous channel 0–5; device mapping unavailable |
 | `hr` | `confidence` | number | 0 or 1; historical filtering retained 1 |
-| `hr` | `heart_rate` | number | 0–73 BPM; zero represents no lock in supplied metadata |
+| `hr` | `heart_rate` | number | 0–73 BPM; zero values retained from the export |
 | `ibi` | `ibi` | integer | 0–1,093 ms; zero initialization values retained |
 
 | Channel observation | Meaning |
@@ -98,7 +87,7 @@ All 23 current eye-source columns are retained; the calendar column has been rem
 
 - Existing observations: 30,289 true samples; 2,479 true runs; 4,958 total runs; true-run spans 0–1.938 s.
 - This low-movement heuristic has no quality, gap or minimum-duration rule. False samples are not measured saccades.
-- The manifest records a historical comparison with `rtol=0`, `atol=1e-9`. Its referenced `scripts.derive` implementation is not included in this checkout.
+- A historical comparison used `rtol=0` and `atol=1e-9`. Its implementation is not included in this checkout.
 
 ## Supplied summaries: `eye_metrics.csv`
 

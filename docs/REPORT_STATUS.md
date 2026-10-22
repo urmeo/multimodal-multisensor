@@ -35,7 +35,7 @@ The original P01 S3 export is absent from the released files and Git history. Th
 
 The report value is rounded and unverified. Neither alternative establishes the correct value. Released tables remain unchanged. Substitution changes eight of 36 Spearman correlations, with a maximum absolute change of 0.109. Pupil and response-duration ICCs remain unchanged in that scenario. Participant omission changes all three metrics' estimates.
 
-[ICC results](../outputs/sensitivity/icc.csv) · [Correlations](../outputs/sensitivity/correlations.csv) · [Omnibus tests](../outputs/sensitivity/omnibus.csv) · [Paired tests](../outputs/sensitivity/paired.csv) · [Sources and settings](../outputs/sensitivity/provenance.json)
+[ICC results](../outputs/sensitivity/icc.csv) · [Correlations](../outputs/sensitivity/correlations.csv) · [Omnibus tests](../outputs/sensitivity/omnibus.csv) · [Paired tests](../outputs/sensitivity/paired.csv)
 
 The [archived sensitivity script](https://github.com/urmeo/multimodal-multisensor/blob/0f2b1cc55409b1b68bc9ee52341382263fa4559e/scripts/build_group_sensitivity.py) records the three scenarios and calculations.
 
