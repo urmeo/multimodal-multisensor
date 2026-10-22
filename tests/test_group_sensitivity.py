@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+from itertools import combinations
 
 import numpy as np
 import pandas as pd
@@ -75,6 +76,16 @@ def test_all_unique_correlations_and_test_families_are_retained(result):
     assert table.groupby("scenario").size().to_dict() == dict.fromkeys(
         sensitivity.SCENARIO_LABELS, 36
     )
+    features = [
+        f"{metric}: {session}"
+        for metric in paths.GROUP_METRICS
+        for session in paths.SESSION_COLUMNS
+    ]
+    expected_pairs = set(combinations(features, 2))
+    for _, scenario in table.groupby("scenario"):
+        assert set(
+            scenario[["feature_a", "feature_b"]].itertuples(index=False, name=None)
+        ) == expected_pairs
     assert table.groupby("scenario")["n_pairs"].unique().map(list).to_dict() == {
         "released": [10], "report_candidate": [10], "omit_p01": [9]
     }
