@@ -4,18 +4,17 @@
 from __future__ import annotations
 
 import argparse
-from html import escape, unescape
-from html.parser import HTMLParser
-from pathlib import Path
 import posixpath
 import re
 import shutil
-from string import Template
 import tempfile
+from html import escape, unescape
+from html.parser import HTMLParser
+from pathlib import Path
+from string import Template
 from urllib.parse import quote, unquote, urlsplit, urlunsplit
 
 import mistune
-
 
 REPOSITORY_URL = "https://github.com/urmeo/multimodal-multisensor"
 PAGES = (
@@ -30,7 +29,11 @@ MARKER_CONTENT = "multimodal-multisensor documentation\n"
 
 
 def page_path(source: Path) -> Path:
-    return Path("index.html") if source == Path("README.md") else source.with_suffix(".html")
+    return (
+        Path("index.html")
+        if source == Path("README.md")
+        else source.with_suffix(".html")
+    )
 
 
 def source_file(repository: Path, relative: Path) -> Path:
@@ -78,7 +81,9 @@ class SiteRenderer(mistune.HTMLRenderer):
                 f"{quote(relative.as_posix(), safe='/')}"
             )
             return urlunsplit((*urlsplit(github_path)[:3], parts.query, parts.fragment))
-        path = posixpath.relpath(output.as_posix(), page_path(self.source).parent.as_posix())
+        path = posixpath.relpath(
+            output.as_posix(), page_path(self.source).parent.as_posix()
+        )
         return urlunsplit(("", "", quote(path, safe="/"), parts.query, parts.fragment))
 
     def link(self, text: str, url: str, title: str | None = None) -> str:
@@ -129,8 +134,12 @@ def validate_site(directory: Path) -> None:
             if parts.scheme or parts.netloc:
                 continue
             if parts.path.startswith("/"):
-                raise ValueError(f"Site link needs a relative path in {page.name}: {url}")
-            target = (page.parent / unquote(parts.path)).resolve() if parts.path else page
+                raise ValueError(
+                    f"Site link needs a relative path in {page.name}: {url}"
+                )
+            target = (
+                (page.parent / unquote(parts.path)).resolve() if parts.path else page
+            )
             if not target.is_relative_to(directory) or not target.is_file():
                 raise ValueError(f"Missing site target in {page.name}: {url}")
             if (
@@ -141,13 +150,40 @@ def validate_site(directory: Path) -> None:
                 raise ValueError(f"Missing heading in {page.name}: {url}")
 
 
+def install_site(staging: Path, destination: Path) -> None:
+    backup = None
+    if destination.exists():
+        backup = Path(
+            tempfile.mkdtemp(prefix=".mms-docs-backup-", dir=destination.parent)
+        )
+        backup.rmdir()
+        destination.rename(backup)
+    try:
+        staging.rename(destination)
+    except BaseException as install_error:
+        if backup is not None:
+            try:
+                backup.rename(destination)
+            except OSError as restore_error:
+                raise OSError(
+                    f"Documentation installation failed: {install_error}. "
+                    f"Could not restore the previous build: {restore_error}. "
+                    f"The previous build is preserved at {backup}"
+                ) from restore_error
+        raise
+    if backup is not None:
+        shutil.rmtree(backup)
+
+
 def build_site(repository: Path, output: Path | None = None, ref: str = "main") -> Path:
     repository = repository.resolve()
     destination = (output or repository / "build" / "docs").resolve()
     managed_output = repository / "build" / "docs"
     if destination == repository or repository.is_relative_to(destination):
         raise ValueError("The output must not contain the repository.")
-    if destination.is_relative_to(repository) and not destination.is_relative_to(repository / "build"):
+    if destination.is_relative_to(repository) and not destination.is_relative_to(
+        repository / "build"
+    ):
         raise ValueError("An output inside the repository must be under build/.")
     if destination.exists() and not destination.is_dir():
         raise ValueError(f"The output is not a directory: {destination}")
@@ -158,7 +194,9 @@ def build_site(repository: Path, output: Path | None = None, ref: str = "main") 
             or not marker.is_file()
             or marker.read_text(encoding="utf-8") != MARKER_CONTENT
         ):
-            raise ValueError(f"Refusing to replace an unknown nonempty output: {destination}")
+            raise ValueError(
+                f"Refusing to replace an unknown nonempty output: {destination}"
+            )
     if not ref or any(char.isspace() for char in ref):
         raise ValueError("The GitHub ref must be nonempty and contain no whitespace.")
     template_file = source_file(repository, Path("docs/site/template.html"))
@@ -166,15 +204,23 @@ def build_site(repository: Path, output: Path | None = None, ref: str = "main") 
     template = Template(template_file.read_text(encoding="utf-8"))
     assets: set[Path] = set()
     destination.parent.mkdir(parents=True, exist_ok=True)
-    with tempfile.TemporaryDirectory(prefix=".mms-docs-", dir=destination.parent) as temporary:
+    with tempfile.TemporaryDirectory(
+        prefix=".mms-docs-", dir=destination.parent
+    ) as temporary:
         staging = Path(temporary).resolve()
         for filename in PAGES:
             source = Path(filename)
             markdown = source_file(repository, source).read_text(encoding="utf-8")
             renderer = SiteRenderer(repository, source, ref, assets)
-            content = mistune.create_markdown(renderer=renderer, plugins=["table"])(markdown)
+            content = mistune.create_markdown(renderer=renderer, plugins=["table"])(
+                markdown
+            )
             title = next(
-                (line[2:].strip() for line in markdown.splitlines() if line.startswith("# ")),
+                (
+                    line[2:].strip()
+                    for line in markdown.splitlines()
+                    if line.startswith("# ")
+                ),
                 source.stem,
             )
             relative = page_path(source)
@@ -182,7 +228,10 @@ def build_site(repository: Path, output: Path | None = None, ref: str = "main") 
             target.parent.mkdir(parents=True, exist_ok=True)
             root = posixpath.relpath(".", relative.parent.as_posix())
             html = template.substitute(
-                title=escape(title), content=content, root=root, repository_url=REPOSITORY_URL
+                title=escape(title),
+                content=content,
+                root=root,
+                repository_url=REPOSITORY_URL,
             )
             target.write_text(html, encoding="utf-8")
         for asset in sorted(assets):
@@ -193,16 +242,18 @@ def build_site(repository: Path, output: Path | None = None, ref: str = "main") 
         (staging / ".nojekyll").touch()
         (staging / BUILD_MARKER).write_text(MARKER_CONTENT, encoding="utf-8")
         validate_site(staging)
-        if destination.exists():
-            shutil.rmtree(destination)
-        staging.rename(destination)
+        install_site(staging, destination)
     return destination
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--output", type=Path, help="Output directory (default: build/docs)")
-    parser.add_argument("--ref", default="main", help="GitHub revision for source links (default: main)")
+    parser.add_argument(
+        "--output", type=Path, help="Output directory (default: build/docs)"
+    )
+    parser.add_argument(
+        "--ref", default="main", help="GitHub revision for source links (default: main)"
+    )
     args = parser.parse_args()
     repository = Path(__file__).resolve().parents[1]
     try:

@@ -1514,3 +1514,48 @@ def test_kernel_normalizer_rejects_invalid_json_structure(
         normalize_kernelspec.main(["--write"])
     assert str(invalid) in str(error.value)
     assert file_hashes(notebook_checkout) == before
+
+
+def test_site_installation_failure_restores_previous_build(
+    site_repository, monkeypatch
+):
+    output = build_docs.build_site(site_repository)
+    before = file_hashes(output)
+    (site_repository / "README.md").write_text("# Updated study\n")
+    rename = Path.rename
+
+    def fail_install(path, target):
+        if path.name.startswith(".mms-docs-") and not path.name.startswith(
+            ".mms-docs-backup-"
+        ):
+            raise PermissionError("simulated installation failure")
+        return rename(path, target)
+
+    monkeypatch.setattr(Path, "rename", fail_install)
+    with pytest.raises(PermissionError, match="installation failure"):
+        build_docs.build_site(site_repository)
+    assert file_hashes(output) == before
+    assert not list(output.parent.glob(".mms-docs-*"))
+
+
+def test_site_failed_rollback_preserves_previous_build_in_backup(
+    site_repository, monkeypatch
+):
+    output = build_docs.build_site(site_repository)
+    before = file_hashes(output)
+    (site_repository / "README.md").write_text("# Updated study\n")
+    rename = Path.rename
+
+    def fail_install_and_restore(path, target):
+        if path.name.startswith(".mms-docs-"):
+            raise PermissionError("simulated rename failure")
+        return rename(path, target)
+
+    monkeypatch.setattr(Path, "rename", fail_install_and_restore)
+    with pytest.raises(OSError, match="previous build is preserved") as error:
+        build_docs.build_site(site_repository)
+    backups = list(output.parent.glob(".mms-docs-backup-*"))
+    assert len(backups) == 1 and str(backups[0]) in str(error.value)
+    assert file_hashes(backups[0]) == before
+    assert not output.exists()
+    assert set(output.parent.glob(".mms-docs-*")) == set(backups)
