@@ -536,6 +536,78 @@ def test_synchronized_features_gate_finite_hr_and_confidence(monkeypatch):
     assert np.isfinite(result[["heart_rate", "ibi", "pupil"]]).all().all()
 
 
+@pytest.fixture
+def synchronized_streams(monkeypatch):
+    times = [f"2024-01-01T00:00:00.{value:03d}" for value in (100, 100, 200, 200)]
+    intervals = pd.DataFrame(
+        {
+            "datetime": times,
+            "iSensor": [5, 6, 5, 6],
+            "ibi": [800, 1200, 810, 1210],
+        }
+    )
+    streams = {
+        "ibi": intervals,
+        "hr": intervals[["datetime", "iSensor"]].assign(
+            heart_rate=[80, 120, 81, 121], confidence=1
+        ),
+        "eye": eye_frame().assign(
+            datetime=[
+                f"2024-01-01T00:00:00.{value:03d}" for value in (0, 50, 150, 250)
+            ],
+            pupilQ=1,
+        ),
+    }
+    monkeypatch.setenv("MMS_SENSOR_TIMEZONE", "UTC")
+    monkeypatch.setenv("MMS_CLOCKS_SYNCHRONIZED", "1")
+    monkeypatch.setattr(ex.io, "load_ibi", lambda *a, **k: streams["ibi"])
+    monkeypatch.setattr(ex.io, "load_hr", lambda *a, **k: streams["hr"])
+    monkeypatch.setattr(ex.io, "load_raw", lambda *a, **k: streams["eye"])
+    return streams
+
+
+@pytest.mark.parametrize("stream", ["hr", "ibi", "eye"])
+def test_synchronized_features_reject_duplicate_times_within_streams(
+    synchronized_streams, stream
+):
+    frame = synchronized_streams[stream]
+    synchronized_streams[stream] = pd.concat([frame, frame.iloc[[-1]]], ignore_index=True)
+    with pytest.raises(ValueError, match="unique within each stream/channel"):
+        ex.synchronized_features(1)
+
+
+def test_synchronized_features_keep_channels_with_shared_times(synchronized_streams):
+    result = ex.synchronized_features(1)
+    assert result.Channel.tolist() == [5, 5, 6, 6]
+    assert result.heart_rate.tolist() == [80, 81, 120, 121]
+    assert result.ibi.tolist() == [800, 810, 1200, 1210]
+
+
+def test_synchronized_features_use_latest_past_eye_sample_within_100ms(
+    synchronized_streams,
+):
+    origin = pd.Timestamp("2024-01-01")
+    intervals = pd.DataFrame(
+        {
+            "datetime": origin + pd.to_timedelta([50, 150, 280, 281, 450], unit="ms"),
+            "iSensor": 5,
+            "ibi": [800, 810, 820, 830, 840],
+        }
+    )
+    synchronized_streams["ibi"] = intervals
+    synchronized_streams["hr"] = intervals[["datetime", "iSensor"]].assign(
+        heart_rate=[80, 81, 82, 83, 84], confidence=1
+    )
+    synchronized_streams["eye"] = eye_frame().iloc[:3].assign(
+        datetime=origin + pd.to_timedelta([100, 180, 500], unit="ms"),
+        pupilQ=1,
+    )
+    result = ex.synchronized_features(1)
+    assert result.ibi.tolist() == [800, 810, 820, 830, 840]
+    assert result.pupil.iloc[[1, 2]].tolist() == [3, 4]
+    assert result.pupil.iloc[[0, 3, 4]].isna().all()
+
+
 @pytest.mark.parametrize("column", ["heart_rate", "confidence"])
 def test_hr_contract_rejects_complex_measurements(column):
     frame = pd.DataFrame({"heart_rate": [80], "confidence": [1]})
