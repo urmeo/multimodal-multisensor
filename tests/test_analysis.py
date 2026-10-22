@@ -1,10 +1,20 @@
-"""Synthetic regressions for notebook alignment, summaries and export boundaries."""
+"""Question alignment, recording summaries and group comparisons."""
+
+from __future__ import annotations
+
+import json
+import os
+from itertools import combinations
 
 import numpy as np
 import pandas as pd
 import pytest
+from scipy import stats as scipy_stats
 
 from mms import exploration as ex
+from mms import io, paths
+from scripts import build_group_sensitivity as sensitivity
+from scripts import build_recording_figures as recording_figures
 
 
 def questions(
@@ -266,7 +276,13 @@ def test_derived_eye_marks_event_positions_with_duplicate_indices():
     assert events.start_pos.tolist() == [1, 5]
     assert events.end_pos.tolist() == [2, 6]
     assert samples.legacy_low_movement.tolist() == [
-        False, True, True, False, False, True, True
+        False,
+        True,
+        True,
+        False,
+        False,
+        True,
+        True,
     ]
     assert samples.event_id.fillna(-1).tolist() == [-1, 1, 1, -1, -1, 2, 2]
 
@@ -571,7 +587,9 @@ def test_synchronized_features_reject_duplicate_times_within_streams(
     synchronized_streams, stream
 ):
     frame = synchronized_streams[stream]
-    synchronized_streams[stream] = pd.concat([frame, frame.iloc[[-1]]], ignore_index=True)
+    synchronized_streams[stream] = pd.concat(
+        [frame, frame.iloc[[-1]]], ignore_index=True
+    )
     with pytest.raises(ValueError, match="unique within each stream/channel"):
         ex.synchronized_features(1)
 
@@ -598,9 +616,13 @@ def test_synchronized_features_use_latest_past_eye_sample_within_100ms(
     synchronized_streams["hr"] = intervals[["datetime", "iSensor"]].assign(
         heart_rate=[80, 81, 82, 83, 84], confidence=1
     )
-    synchronized_streams["eye"] = eye_frame().iloc[:3].assign(
-        datetime=origin + pd.to_timedelta([100, 180, 500], unit="ms"),
-        pupilQ=1,
+    synchronized_streams["eye"] = (
+        eye_frame()
+        .iloc[:3]
+        .assign(
+            datetime=origin + pd.to_timedelta([100, 180, 500], unit="ms"),
+            pupilQ=1,
+        )
     )
     result = ex.synchronized_features(1)
     assert result.ibi.tolist() == [800, 810, 820, 830, 840]
@@ -670,3 +692,260 @@ def test_correlation_plot_labels_actual_adjustment(monkeypatch):
     )
     figure = ex.plot_correlations(group)
     assert "Benjamini-Hochberg-adjusted" in figure.axes[0].get_title()
+
+
+@pytest.fixture(scope="module")
+def sensitivity_results():
+    return sensitivity.calculate()
+
+
+def test_scenarios_change_copies_and_omit_the_same_participant():
+    frames = {
+        metric: io.load_group_summary(metric).set_index("Participant")
+        for metric in paths.GROUP_METRICS
+    }
+    before = {metric: frame.copy(deep=True) for metric, frame in frames.items()}
+    scenarios = sensitivity.scenarios(frames)
+    for metric, source in frames.items():
+        pd.testing.assert_frame_equal(source, before[metric])
+        pd.testing.assert_frame_equal(scenarios["released"][metric], source)
+        pd.testing.assert_frame_equal(scenarios["omit_p01"][metric], source.drop("P01"))
+        candidate = scenarios["report_candidate"][metric]
+        changed = candidate.ne(source)
+        assert changed.to_numpy().sum() == (1 if metric == sensitivity.METRIC else 0)
+    assert (
+        scenarios["report_candidate"][sensitivity.METRIC].loc["P01", "Session 03"]
+        == 1012.69
+    )
+    scenarios["report_candidate"][sensitivity.METRIC].iloc[0, 0] = -1
+    assert (
+        scenarios["released"][sensitivity.METRIC].iloc[0, 0]
+        == before[sensitivity.METRIC].iloc[0, 0]
+    )
+    pd.testing.assert_frame_equal(
+        frames[sensitivity.METRIC], before[sensitivity.METRIC]
+    )
+
+
+@pytest.mark.parametrize(
+    "scenario, expected",
+    [
+        ("released", (0.22086877598148408, -0.13106918452370253, 0.6585242879821892)),
+        (
+            "report_candidate",
+            (0.0383526954985559, -0.2527550683217968, 0.5086509578797136),
+        ),
+        ("omit_p01", (0.21609837947646235, -0.15033525063366285, 0.6798198848650101)),
+    ],
+)
+def test_interval_icc_matches_independent_one_way_anova(
+    sensitivity_results, scenario, expected
+):
+    source = io.load_group_summary(sensitivity.METRIC).set_index("Participant")
+    if scenario == "report_candidate":
+        source.loc["P01", "Session 03"] = 1012.69
+    elif scenario == "omit_p01":
+        source = source.drop("P01")
+    values = source.to_numpy(float)
+    n, k = values.shape
+    means = values.mean(axis=1)
+    between = k * np.square(means - values.mean()).sum() / (n - 1)
+    within = np.square(values - means[:, None]).sum() / (n * (k - 1))
+    ratio = between / within
+    bounds = ratio / scipy_stats.f.ppf([0.975, 0.025], n - 1, n * (k - 1))
+    reference = [(ratio - 1) / (ratio + k - 1), *((bounds - 1) / (bounds + k - 1))]
+    estimates = sensitivity_results["tables"]["icc.csv"]
+    row = estimates.loc[
+        (estimates["scenario"] == scenario)
+        & (estimates["metric"] == sensitivity.METRIC)
+    ].iloc[0]
+    assert row[["icc", "lower", "upper"]].to_numpy(float) == pytest.approx(
+        reference, abs=1e-12
+    )
+    assert reference == pytest.approx(expected, abs=1e-12)
+
+
+def test_all_unique_correlations_and_test_families_are_retained(sensitivity_results):
+    table = sensitivity_results["tables"]["correlations.csv"]
+    assert table.groupby("scenario").size().to_dict() == dict.fromkeys(
+        sensitivity.SCENARIO_LABELS, 36
+    )
+    features = [
+        f"{metric}: {session}"
+        for metric in paths.GROUP_METRICS
+        for session in paths.SESSION_COLUMNS
+    ]
+    expected_pairs = set(combinations(features, 2))
+    for _, scenario in table.groupby("scenario"):
+        assert (
+            set(scenario[["feature_a", "feature_b"]].itertuples(index=False, name=None))
+            == expected_pairs
+        )
+    assert table.groupby("scenario")["n_pairs"].unique().map(list).to_dict() == {
+        "released": [10],
+        "report_candidate": [10],
+        "omit_p01": [9],
+    }
+    assert table[["p_raw", "p_fdr"]].ge(0).all().all()
+    assert table[["p_raw", "p_fdr"]].le(1).all().all()
+    indexed = table.set_index(["scenario", "feature_a", "feature_b"]).sort_index()
+    delta = indexed.loc["report_candidate", "rho"] - indexed.loc["released", "rho"]
+    assert (delta.abs() > 1e-12).sum() == 8
+    assert delta.abs().max() == pytest.approx(0.10909090909090909)
+    assert (
+        sensitivity_results["tables"]["omnibus.csv"]
+        .groupby("scenario")
+        .size()
+        .eq(3)
+        .all()
+    )
+    paired = sensitivity_results["tables"]["paired.csv"]
+    assert paired.groupby("scenario").size().eq(9).all()
+    assert paired.groupby("scenario")["p_holm"].min().to_dict() == pytest.approx(
+        {"released": 1, "report_candidate": 1, "omit_p01": 0.87890625}
+    )
+
+
+def test_export_and_verification_leave_sources_and_outputs_unchanged(
+    tmp_path, monkeypatch, sensitivity_results
+):
+    sources = {
+        name: (paths.ROOT / name).read_bytes()
+        for name in sensitivity_results["source_sha256"]
+    }
+    output = tmp_path / "outputs/sensitivity"
+    sensitivity.build(output, sensitivity_results)
+    saved = {name: (output / name).read_bytes() for name in sensitivity.OUTPUT_NAMES}
+    monkeypatch.setattr(sensitivity, "ROOT", tmp_path)
+    monkeypatch.setattr(
+        sensitivity, "calculate", lambda data_root=None: sensitivity_results
+    )
+    assert sensitivity.main([]) == 0
+    assert saved == {name: (output / name).read_bytes() for name in saved}
+    assert sources == {name: (paths.ROOT / name).read_bytes() for name in sources}
+
+
+@pytest.mark.parametrize("corruption", ["sources", "settings", "figure", "results"])
+def test_verification_rejects_stale_results_or_provenance(
+    tmp_path, sensitivity_results, corruption
+):
+    sensitivity.build(tmp_path, sensitivity_results)
+    provenance_path = tmp_path / "provenance.json"
+    provenance = json.loads(provenance_path.read_text())
+    if corruption == "sources":
+        provenance["source_sha256"] = {}
+    elif corruption == "settings":
+        provenance["settings"]["report_candidate"] = 65.39
+    elif corruption == "figure":
+        (tmp_path / "sensitivity.png").write_bytes(b"changed")
+    else:
+        table = pd.read_csv(tmp_path / "icc.csv")
+        table.loc[0, "icc"] = 0.99
+        table.to_csv(tmp_path / "icc.csv", index=False)
+    provenance_path.write_text(json.dumps(provenance))
+    with pytest.raises(ValueError):
+        sensitivity.verify(tmp_path, sensitivity_results)
+
+
+def test_all_destinations_are_guarded_before_writing(tmp_path, sensitivity_results):
+    data_root = tmp_path / "data"
+    source = data_root / "group_results/HRV_SDNN.csv"
+    source.parent.mkdir(parents=True)
+    source.write_bytes(b"preserved source observation\n")
+    before = source.read_bytes()
+    output = tmp_path / "sensitivity"
+    output.mkdir()
+    os.link(source, output / "provenance.json")
+    with pytest.raises(ValueError, match="aliases a source"):
+        sensitivity.build(output, sensitivity_results, data_root=data_root)
+    assert not (output / "icc.csv").exists()
+    assert source.read_bytes() == before
+
+
+def test_sample_selection_keeps_channels_and_repeated_intervals():
+    frame = pd.DataFrame(
+        {"reltime": [0, 1, 2, 3], "iSensor": [3, 5, 3, 5], "ibi": [800, 900, 800, 0]}
+    )
+    assert recording_figures.samples(frame, "ibi") == {
+        "3": {"time_s": [0.0, 2.0], "values": [800, 800]},
+        "5": {"time_s": [1.0], "values": [900]},
+    }
+
+
+def test_quality_and_nonfinite_readings_are_not_plotted():
+    frame = pd.DataFrame(
+        {
+            "reltime": range(5),
+            "iSensor": [0] * 5,
+            "pupil": [3, 4, 5, np.inf, 0],
+            "pupilQ": [0.5, 0.8, 1.1, 1, 1],
+        }
+    )
+    assert recording_figures.samples(frame, "pupil", quality="pupilQ") == {
+        "0": {"time_s": [1.0], "values": [4]}
+    }
+
+
+def test_fractional_channels_and_reversed_clocks_fail():
+    with pytest.raises(ValueError, match="integer channel"):
+        recording_figures.samples(
+            pd.DataFrame({"reltime": [0, 1], "iSensor": [1.1, 1.9], "ibi": [800, 900]}),
+            "ibi",
+        )
+    with pytest.raises(ValueError, match="nondecreasing"):
+        recording_figures.samples(
+            pd.DataFrame({"reltime": [1, 0], "iSensor": [3, 3], "ibi": [800, 900]}),
+            "ibi",
+        )
+
+
+def test_published_panels_are_bound_to_source_selections_and_bytes(tmp_path):
+    for name in ("heart", "interval", "pupil"):
+        (tmp_path / f"recorded-{name}.png").write_bytes(name.encode())
+    info = {"selection_sha256": "source-selection"}
+    metadata = {
+        **info,
+        "figures": {
+            f"recorded-{name}.png": recording_figures.digest(
+                tmp_path / f"recorded-{name}.png"
+            )
+            for name in ("heart", "interval", "pupil")
+        },
+    }
+    target = tmp_path / "recording-figures.toml"
+    target.write_text(recording_figures.metadata_text(metadata))
+    recording_figures.verify(tmp_path, info)
+    with pytest.raises(ValueError, match="selections"):
+        recording_figures.verify(tmp_path, {"selection_sha256": "different-selection"})
+    (tmp_path / "recorded-heart.png").write_bytes(b"changed")
+    with pytest.raises(ValueError, match="image bytes"):
+        recording_figures.verify(tmp_path, info)
+
+
+def test_actual_recording_selection_inventory():
+    data = recording_figures.payload()
+    info = recording_figures.provenance(data, paths.resolve_data_root())
+    assert info["counts"] == {
+        "heart": {"3": 1432, "5": 1411},
+        "interval": {"3": 602, "5": 1299},
+        "pupil": {"0": 23091},
+    }
+
+
+def test_invalid_recording_does_not_create_outputs(tmp_path):
+    root = tmp_path / "data" / "case-study" / "raw"
+    root.mkdir(parents=True)
+    for name, values in {
+        "hr": {"heart_rate": [80, 90], "confidence": [1, 1]},
+        "ibi": {"ibi": [800, 900]},
+        "sed": {"pupil": [3, 4], "pupilQ": [1, 1]},
+    }.items():
+        pd.DataFrame({"reltime": [0, 1], "iSensor": [1.1, 1.9], **values}).to_csv(
+            root / f"{name}_01.txt", sep=";", index=False
+        )
+    destination = tmp_path / "plots"
+    with pytest.raises(ValueError, match="integer channel"):
+        recording_figures.main(
+            ["--data-root", str(tmp_path / "data"), "--output-root", str(destination)]
+        )
+    assert not destination.exists()
