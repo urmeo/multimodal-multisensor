@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Data and consent</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <header>
+    <nav aria-label="Documentation">
+      <a class="project" href="./index.html">Multimodal-Multisensor</a>
+      <a href="./docs/FIGURES.html">Figures</a>
+      <a href="./docs/REPORT_STATUS.html">Reports</a>
+      <a href="./index.html#run">Run</a>
+      <a href="https://github.com/urmeo/multimodal-multisensor">GitHub</a>
+    </nav>
+  </header>
+  <main id="content"><h1 id="data-and-consent">Data and consent</h1>
+<h2 id="recorded-consent">Recorded consent</h2>
+<p>The author states that all 10 adults gave written informed consent. This account includes later open sharing for research and education and withdrawal without penalty. Not every consent or review record is independently verified.</p>
+<p>The thesis describes an earlier protocol limited to the research team. The poster proposes a CER submission; it does not document approval. No approval identifier is recorded here. The author names GDPR and French data-protection law as the governing framework. That statement does not establish institutional approval or independently verified compliance.</p>
+<p>The thesis describes explicit consent for recognizable session photographs in Annexes E/F, PDF page 46, printed page 49. Photo consent is separate from the use of participant codes in tables and from questionnaire copyright.</p>
+<h2 id="actual-release-scope">Actual release scope</h2>
+<table>
+<thead>
+<tr>
+  <th style="text-align:left">Material</th>
+  <th style="text-align:left">Residual information</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td style="text-align:left">CSVs and raw TXT</td>
+  <td style="text-align:left">Responses, physiological data, calendar timestamps and channel/device labels</td>
+</tr>
+<tr>
+  <td style="text-align:left">QQ and modified CSVs</td>
+  <td style="text-align:left">Historical dates, derived flags and responses</td>
+</tr>
+<tr>
+  <td style="text-align:left">PDFs and screenshots</td>
+  <td style="text-align:left">Dates, device labels and context</td>
+</tr>
+<tr>
+  <td style="text-align:left">Session photographs</td>
+  <td style="text-align:left">Consented recognizable people</td>
+</tr>
+</tbody>
+</table>
+<p>Tables use participant codes instead of names. The release still contains identifying information and is not anonymous. Earlier notebooks remain in Git history. The two raw-data folders contain distinct files; the individual folder's participant mapping is undocumented. Eye and cardiac records are available. GSR and facial outputs are absent.</p>
+<h2 id="historical-timestamp-copy-tool">Historical timestamp-copy tool</h2>
+<p>The <a href="https://github.com/urmeo/multimodal-multisensor/blob/0f2b1cc55409b1b68bc9ee52341382263fa4559e/scripts/deidentify_timestamps.py">archived timestamp-copy tool</a> is no longer included in this checkout. That version validates its 51-file inventory in <code>case-study/</code>, <code>individual/</code> and <code>group_results/</code> without writing files by default. Its <code>--output-root</code> option writes copies of CSVs that contain calendar timestamps. Dates shift to a fixed calendar anchor separately for each file and compatible clock domain. Raw TXT, notebooks, reports, media and CSVs without calendar timestamps are not copied or changed.</p>
+<p>The tool validates every CSV before writing any copies. It never overwrites source files and rejects malformed nonempty dates. Logs omit original dates and offsets.</p>
+<p>Shifting dates within a file preserves differences between compatible timestamps in that file. It does not establish synchronization across streams. The copies still contain sensitive responses and measurements; they are not anonymous.</p>
+<h2 id="rights-and-attribution">Rights and attribution</h2>
+<table>
+<thead>
+<tr>
+  <th style="text-align:left">Material</th>
+  <th style="text-align:left">Terms</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td style="text-align:left">Code</td>
+  <td style="text-align:left"><a href="https://github.com/urmeo/multimodal-multisensor/blob/30fcc23cc7f8e2dc3d3f7dbf3991cb604ae6f75b/LICENSE">MIT</a></td>
+</tr>
+<tr>
+  <td style="text-align:left">Author-owned data and figures</td>
+  <td style="text-align:left">Recorded <a href="https://creativecommons.org/licenses/by/4.0/legalcode.en">CC BY 4.0</a> grant; retain attribution, cite <a href="https://github.com/urmeo/multimodal-multisensor/blob/30fcc23cc7f8e2dc3d3f7dbf3991cb604ae6f75b/CITATION.cff">CITATION.cff</a> and identify changes</td>
+</tr>
+<tr>
+  <td style="text-align:left">HADS wording and screenshots</td>
+  <td style="text-align:left">GL Assessment; <a href="https://www.gl-assessment.co.uk/policies/permissions/">permission process</a></td>
+</tr>
+<tr>
+  <td style="text-align:left">STAI-S/STAI-T wording, translations and screenshots</td>
+  <td style="text-align:left">Mind Garden; <a href="https://www.mindgarden.com/271-mind-garden-forms">publication permission</a> and <a href="https://www.mindgarden.com/state-trait-anxiety-inventory-for-adults/28-staiad-transform-survey-hosting.html">licensed scope</a></td>
+</tr>
+<tr>
+  <td style="text-align:left">BFI-10/Fear Questionnaire items</td>
+  <td style="text-align:left">Rights depend on the original authors and versions; redistribution permission is not recorded here</td>
+</tr>
+<tr>
+  <td style="text-align:left">Illustrative photos and report graphics</td>
+  <td style="text-align:left">Author or source rights; recognizable session photographs have the consent account described above</td>
+</tr>
+</tbody>
+</table>
+<p>The recorded CC BY 4.0 copyright grant allows sharing and adaptation, including commercial use. It does not grant all privacy or personality rights. The author's recorded research and education intent and consent account remain separate from copyright permission; they are not additional CC BY copyright restrictions.</p>
+<p>Repository licenses do not grant permission to republish protected questionnaire wording, translations or answer options. Historical questionnaire versions and response coding remain unverified; establish them before scoring.</p>
+<h2 id="use-and-contact">Use and contact</h2>
+<ul>
+<li>Retain attribution and respect consent and third-party rights. Do not reidentify participants or make individual decisions from these records.</li>
+<li>Report identifying evidence privately through <a href="https://github.com/urmeo/multimodal-multisensor/security/advisories/new">Security</a>. Public reproducibility issues should use synthetic examples.</li>
+<li>Send data-subject access, correction, erasure and objection requests to the recorded controller, urme (<a href="https://github.com/urmeo">@urmeo</a>), through a private channel.</li>
+</ul>
+</main>
+  <footer>
+    <a href="./DATA_ETHICS.html">Data use and consent</a>
+    <a href="https://github.com/urmeo/multimodal-multisensor/security/advisories/new">Report a concern</a>
+  </footer>
+</body>
+</html>

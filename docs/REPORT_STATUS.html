@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Report status</title>
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <header>
+    <nav aria-label="Documentation">
+      <a class="project" href="../index.html">Multimodal-Multisensor</a>
+      <a href="../docs/FIGURES.html">Figures</a>
+      <a href="../docs/REPORT_STATUS.html">Reports</a>
+      <a href="../index.html#run">Run</a>
+      <a href="https://github.com/urmeo/multimodal-multisensor">GitHub</a>
+    </nav>
+  </header>
+  <main id="content"><h1 id="report-status">Report status</h1>
+<p>The PDFs retain their bytes from release baseline <code>a369ee0dc2dcac24feaa9e2e1faf160c39d5a3de</code>, which revised the thesis and poster. Locations use PDF pages, with printed page numbers where they differ. The result tables are retained; their <a href="https://github.com/urmeo/multimodal-multisensor/tree/0f2b1cc55409b1b68bc9ee52341382263fa4559e">analysis code</a> is no longer included in this checkout. The source gaps below limit interpretation of the historical reports.</p>
+<table>
+<thead>
+<tr>
+  <th style="text-align:left">Report</th>
+  <th style="text-align:left">Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td style="text-align:left"><a href="reports/Multimodal%20Multisensor%20Technical%20Report.pdf">Technical report</a>, 12 pages</td>
+  <td style="text-align:left">Historical methods and results</td>
+</tr>
+<tr>
+  <td style="text-align:left"><a href="reports/Thesis%20Report.pdf">Thesis</a>, 53 pages</td>
+  <td style="text-align:left">Protocol, analyses and consent appendices</td>
+</tr>
+<tr>
+  <td style="text-align:left"><a href="reports/CYPSY_Poster.pdf">Poster</a>, 1 page</td>
+  <td style="text-align:left">Proposed protocol and expected results</td>
+</tr>
+</tbody>
+</table>
+<h2 id="corrections-and-source-gaps">Corrections and source gaps</h2>
+<table>
+<thead>
+<tr>
+  <th style="text-align:left">Location</th>
+  <th style="text-align:left">Correction or unresolved issue</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td style="text-align:left">Technical p3</td>
+  <td style="text-align:left">The report counts openness values above 1 as closed; the archived analysis uses values at or below 1 for candidate closure. Units and polarity are unverified. Its event rules require observed reopening and handle gaps. Gaze distance was not angular velocity.</td>
+</tr>
+<tr>
+  <td style="text-align:left">Technical p6</td>
+  <td style="text-align:left">P01 S3 interval SD is 1012.69 in the report and 65.39 in the CSV. The original raw source is unavailable. Both values are preserved; the discrepancy is unresolved.</td>
+</tr>
+<tr>
+  <td style="text-align:left">Technical p8 to 11</td>
+  <td style="text-align:left">Claims about agreement at k = 3, PCA before clustering, HADS validation and stable traits exceed the code evidence. The case study clusters timestamp samples from one person. It does not validate clinical or participant categories.</td>
+</tr>
+<tr>
+  <td style="text-align:left">Thesis p25, printed 28</td>
+  <td style="text-align:left">Some p values exceed 1; values shown as 0.00 are rounded. Recovering lost exponents and precision requires the original statistical output. No replacement values are supplied.</td>
+</tr>
+<tr>
+  <td style="text-align:left">Thesis p37 to 38, printed 40 to 41</td>
+  <td style="text-align:left">Available eye and cardiac analyses differ from the planned GSR and facial integration. Diagnostic and stable-trait conclusions exceed the evidence from the uncertain ten-person estimates.</td>
+</tr>
+<tr>
+  <td style="text-align:left">Thesis p4 to 5, printed 7 to 8</td>
+  <td style="text-align:left">The protocol limits access to the research team. It differs from the author's later account of consent for sharing. No review identifier is independently established.</td>
+</tr>
+<tr>
+  <td style="text-align:left">Thesis p46, printed 49</td>
+  <td style="text-align:left">Annexes E/F explicitly record photo consent.</td>
+</tr>
+<tr>
+  <td style="text-align:left">Poster</td>
+  <td style="text-align:left">The poster gives a target of 10 participants, expected results and a planned CER submission. Its Tobii/Empatica equipment, PHQ/ACEs instruments and age range of 18 to 30 differ from later methods. It does not document approval or measured results.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="cardiac-sensitivity">Cardiac sensitivity</h2>
+<p>The original P01 S3 export is absent from the released files and Git history. The preserved sensitivity results compare the released value, the report's printed value and omission of P01 from all three group tables.</p>
+<table>
+<thead>
+<tr>
+  <th style="text-align:left">Scenario</th>
+  <th style="text-align:right">Participants</th>
+  <th style="text-align:right">ICC(1,1) of interval-sample SD</th>
+  <th style="text-align:left">95% interval</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td style="text-align:left">Released CSV: P01 S3 = 65.3938</td>
+  <td style="text-align:right">10</td>
+  <td style="text-align:right">0.221</td>
+  <td style="text-align:left">−0.131 to 0.659</td>
+</tr>
+<tr>
+  <td style="text-align:left">Report candidate: P01 S3 = 1012.69</td>
+  <td style="text-align:right">10</td>
+  <td style="text-align:right">0.038</td>
+  <td style="text-align:left">−0.253 to 0.509</td>
+</tr>
+<tr>
+  <td style="text-align:left">Omit P01 from all metrics</td>
+  <td style="text-align:right">9</td>
+  <td style="text-align:right">0.216</td>
+  <td style="text-align:left">−0.150 to 0.680</td>
+</tr>
+</tbody>
+</table>
+<p><a href="../outputs/sensitivity/sensitivity.png"><img src="../outputs/sensitivity/sensitivity.png" alt="Cardiac ICC intervals and session correlations for the three sensitivity scenarios" /></a></p>
+<p>The report value is rounded and unverified. Neither alternative establishes the correct value. Released tables remain unchanged. Substitution changes eight of 36 Spearman correlations, with a maximum absolute change of 0.109. Pupil and response-duration ICCs remain unchanged in that scenario. Participant omission changes all three metrics' estimates.</p>
+<p><a href="https://github.com/urmeo/multimodal-multisensor/blob/30fcc23cc7f8e2dc3d3f7dbf3991cb604ae6f75b/outputs/sensitivity/icc.csv">ICC results</a> · <a href="https://github.com/urmeo/multimodal-multisensor/blob/30fcc23cc7f8e2dc3d3f7dbf3991cb604ae6f75b/outputs/sensitivity/correlations.csv">Correlations</a> · <a href="https://github.com/urmeo/multimodal-multisensor/blob/30fcc23cc7f8e2dc3d3f7dbf3991cb604ae6f75b/outputs/sensitivity/omnibus.csv">Omnibus tests</a> · <a href="https://github.com/urmeo/multimodal-multisensor/blob/30fcc23cc7f8e2dc3d3f7dbf3991cb604ae6f75b/outputs/sensitivity/paired.csv">Paired tests</a></p>
+<p>The <a href="https://github.com/urmeo/multimodal-multisensor/blob/0f2b1cc55409b1b68bc9ee52341382263fa4559e/scripts/build_group_sensitivity.py">archived sensitivity script</a> records the three scenarios and calculations.</p>
+<h2 id="bibliography">Bibliography</h2>
+<p>The Green/Harlow eye-tracking attribution to <em>Journal of Anxiety Disorders 73:102233</em> is incorrect. That identifier belongs to McKay, Yang, Elhai and Asmundson's 2020 study of COVID-related disgust and anxiety, DOI <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC7194061/">10.1016/j.janxdis.2020.102233</a>. It does not support the attributed eye-tracking claim. The historical Johnson/Bennett titles remain unverified.</p>
+<h2 id="current-evidence">Current evidence</h2>
+<ul>
+<li><strong>Interpretation:</strong> the group estimates have wide confidence intervals. They do not validate anxiety diagnoses or stable traits.</li>
+<li><strong>Sample units:</strong> cardiac records contain repeated interval samples without timing for verified unique normal heartbeats. Group response-duration values are within-session standard deviations in seconds.</li>
+<li><strong>Source gaps:</strong> equal-value patterns, missing clock metadata and undocumented participant mapping limit independent reconstruction.</li>
+</ul>
+<p><a href="../DATA_ETHICS.html">Data and consent</a> · <a href="FIGURES.html">Figures</a></p>
+</main>
+  <footer>
+    <a href="../DATA_ETHICS.html">Data use and consent</a>
+    <a href="https://github.com/urmeo/multimodal-multisensor/security/advisories/new">Report a concern</a>
+  </footer>
+</body>
+</html>

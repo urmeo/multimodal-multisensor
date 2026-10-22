@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Multimodal-Multisensor</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <header>
+    <nav aria-label="Documentation">
+      <a class="project" href="./index.html">Multimodal-Multisensor</a>
+      <a href="./docs/FIGURES.html">Figures</a>
+      <a href="./docs/REPORT_STATUS.html">Reports</a>
+      <a href="./index.html#run">Run</a>
+      <a href="https://github.com/urmeo/multimodal-multisensor">GitHub</a>
+    </nav>
+  </header>
+  <main id="content"><h1 id="multimodal-multisensor">Multimodal-Multisensor</h1>
+<p>Eye, cardiac and questionnaire data from a study of 10 adults across three weekly sessions. The release includes available recordings, saved results and reports.</p>
+<p><strong>Keywords:</strong> Eye tracking · Cardiac intervals · Questionnaires · Session reliability</p>
+<h2 id="pipeline">Pipeline</h2>
+<p><a href="images/pipeline.svg"><img src="images/pipeline.svg" alt="Historical workflow. The analysis code has been removed; recordings and saved results remain." /></a></p>
+<p><a href="images/pipeline.svg">Full size</a> · <a href="https://github.com/urmeo/multimodal-multisensor/blob/30fcc23cc7f8e2dc3d3f7dbf3991cb604ae6f75b/pipeline.mmd">Pipeline source</a> · <a href="https://www.figma.com/board/hexcUfwWED4MIu7wjxmWrU/">Figma: earlier design</a></p>
+<h2 id="run">Run</h2>
+<p>Run from the repository root with Python 3.11 or 3.12. These commands build the documentation; analysis code and notebooks were removed.</p>
+<pre><code class="language-bash">python -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt
+python -m pytest tests -q
+python scripts/build_docs.py
+python -m http.server 8000 --directory build/docs
+</code></pre>
+<p>Open <a href="http://localhost:8000">http://localhost:8000</a>.</p>
+<h2 id="results">Results</h2>
+<p><strong>Study:</strong> 10 adults × 3 sessions. <strong>Release:</strong> 24 raw sensor streams.</p>
+<p>Saved ICC(1,1) estimates describe the reliability of within-session standard deviations in the released group tables.</p>
+<table>
+<thead>
+<tr>
+  <th style="text-align:left">Within-session standard deviation</th>
+  <th style="text-align:right">ICC(1,1)</th>
+  <th style="text-align:left">95% interval</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td style="text-align:left">Interval samples</td>
+  <td style="text-align:right">0.22</td>
+  <td style="text-align:left">−0.13 to 0.66</td>
+</tr>
+<tr>
+  <td style="text-align:left">Pupil diameter</td>
+  <td style="text-align:right">0.45</td>
+  <td style="text-align:left">0.07 to 0.79</td>
+</tr>
+<tr>
+  <td style="text-align:left">Response duration</td>
+  <td style="text-align:right">0.61</td>
+  <td style="text-align:left">0.25 to 0.87</td>
+</tr>
+</tbody>
+</table>
+<p>Descriptive results; no diagnostic validation. Most participant summaries lack raw-data mappings. Clock alignment and unique-beat timing are unverified. <a href="docs/FIGURES.html">Methods and limits</a> · <a href="docs/REPORT_STATUS.html">Report corrections</a>.</p>
+<p><a href="outputs/reliability.png"><img src="outputs/reliability.png" alt="Session reliability: 10 participant rows, three sessions and 95 percent intervals" /></a></p>
+<p><a href="outputs/correlation.png"><img src="outputs/correlation.png" alt="Descriptive Spearman correlations between released session summaries" /></a></p>
+<p><a href="outputs/sensitivity/sensitivity.png"><img src="outputs/sensitivity/sensitivity.png" alt="Sensitivity to the unresolved P01 session-3 interval value; alternatives do not establish the correct source value" /></a></p>
+<p><strong>Case-study Session 1</strong></p>
+<p><a href="outputs/recorded-heart.png"><img src="outputs/recorded-heart.png" alt="Reported heart-rate samples, separated by channel" /></a></p>
+<p><a href="outputs/recorded-interval.png"><img src="outputs/recorded-interval.png" alt="Sampled interval distributions, including repeated readings" /></a></p>
+<p><a href="outputs/recorded-pupil.png"><img src="outputs/recorded-pupil.png" alt="Pupil readings with the documented quality filter" /></a></p>
+<h2 id="tech-stack">Tech Stack</h2>
+<table>
+<thead>
+<tr>
+  <th style="text-align:left">Scope</th>
+  <th style="text-align:left">Tools</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td style="text-align:left">Current documentation</td>
+  <td style="text-align:left">Python 3.11/3.12 · Mistune · pytest · HTML/CSS</td>
+</tr>
+<tr>
+  <td style="text-align:left"><a href="https://github.com/urmeo/multimodal-multisensor/tree/0f2b1cc55409b1b68bc9ee52341382263fa4559e">Archived analysis</a></td>
+  <td style="text-align:left">NumPy · pandas · SciPy · Matplotlib · scikit-learn</td>
+</tr>
+</tbody>
+</table>
+<h2 id="roadmap">Roadmap</h2>
+<p>These steps require source evidence that is currently unavailable.</p>
+<ul>
+<li>Document participant-to-recording mappings under the recorded consent.</li>
+<li>Reassess P01 if the original export becomes available.</li>
+<li>Verify acquisition timezones and clock synchronization.</li>
+<li>Validate unique-beat timestamps and record interval corrections.</li>
+<li>Confirm eye-openness units and polarity with labeled calibration frames.</li>
+</ul>
+<h2 id="references">References</h2>
+<ol>
+<li><a href="docs/reports/Multimodal%20Multisensor%20Technical%20Report.pdf">Technical report</a></li>
+<li><a href="docs/reports/Thesis%20Report.pdf">Thesis</a></li>
+<li><a href="docs/reports/CYPSY_Poster.pdf">Proposed protocol</a></li>
+<li><a href="https://github.com/urmeo/multimodal-multisensor/blob/30fcc23cc7f8e2dc3d3f7dbf3991cb604ae6f75b/CITATION.cff">Dataset citation</a></li>
+</ol>
+<h2 id="license">License</h2>
+<p><a href="https://github.com/urmeo/multimodal-multisensor/blob/30fcc23cc7f8e2dc3d3f7dbf3991cb604ae6f75b/LICENSE">Code: MIT</a> · <a href="DATA_ETHICS.html">Data, image and questionnaire terms</a></p>
+</main>
+  <footer>
+    <a href="./DATA_ETHICS.html">Data use and consent</a>
+    <a href="https://github.com/urmeo/multimodal-multisensor/security/advisories/new">Report a concern</a>
+  </footer>
+</body>
+</html>

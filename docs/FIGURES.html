@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Figure provenance</title>
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+  <a class="skip-link" href="#content">Skip to content</a>
+  <header>
+    <nav aria-label="Documentation">
+      <a class="project" href="../index.html">Multimodal-Multisensor</a>
+      <a href="../docs/FIGURES.html">Figures</a>
+      <a href="../docs/REPORT_STATUS.html">Reports</a>
+      <a href="../index.html#run">Run</a>
+      <a href="https://github.com/urmeo/multimodal-multisensor">GitHub</a>
+    </nav>
+  </header>
+  <main id="content"><h1 id="figure-provenance">Figure provenance</h1>
+<p>The saved figures and TOML provenance files are retained. Their analysis code is preserved in <a href="https://github.com/urmeo/multimodal-multisensor/tree/0f2b1cc55409b1b68bc9ee52341382263fa4559e">snapshot <code>0f2b1cc</code></a>. The analysis scripts are no longer included in this checkout.</p>
+<h2 id="recording-figures">Recording figures</h2>
+<p>The <a href="../outputs/recorded-heart.png">heart-rate</a>, <a href="../outputs/recorded-interval.png">interval</a> and <a href="../outputs/recorded-pupil.png">pupil</a> plots use <code>data/case-study/raw/hr_01.txt</code>, <code>ibi_01.txt</code> and <code>sed_01.txt</code> directly. They describe the available samples from session 1.</p>
+<p>Heart rate retains finite positive readings with confidence 1. Intervals retain finite positive readings, including repeated samples. Pupils retain finite positive readings with <code>0.5 &lt; pupilQ &lt;= 1</code>. Channels stay separate. Each stream uses its own recording-relative time in seconds; clocks are not aligned across streams. Reported units are bpm, ms and mm. Calibration and unique-beat provenance are unverified.</p>
+<p><code>outputs/recording-figures.toml</code> records source hashes, a hash of the exact selected values, filters, units, counts and image hashes. The <a href="https://github.com/urmeo/multimodal-multisensor/blob/0f2b1cc55409b1b68bc9ee52341382263fa4559e/scripts/build_recording_figures.py">archived recording-figure script</a> records the calculation. These plots do not establish anxiety categories or validate the ten-person group tables.</p>
+<p>The <a href="../images/data_collection_session.jpg">session photograph</a> appears in thesis Annex E, PDF page 46, printed page 49. Its caption explicitly records photo consent. The <a href="../images/experimental_setup.jpg">experimental setup photograph</a> is also preserved. Source image bytes are unchanged.</p>
+<h2 id="historical-group-summary-calculations">Historical group-summary calculations</h2>
+<p>The README's <a href="../outputs/reliability.png">reliability plot</a> and the <a href="../outputs/correlation.png">correlation plot</a> use the three unchanged group tables. ICC(1,1) estimates have 95% confidence intervals calculated from the F distribution. Spearman correlations use ten participant rows and show no significance stars.</p>
+<p>Most group rows cannot be traced to the available raw recordings. The calculations reproduce the released tables; they do not independently verify the cohort measurements.</p>
+<p><code>outputs/figures.csv</code> records calculated values. <code>outputs/figures.toml</code> records source hashes, methods and figure hashes. The <a href="https://github.com/urmeo/multimodal-multisensor/blob/0f2b1cc55409b1b68bc9ee52341382263fa4559e/scripts/build_figures.py">archived group-figure script</a> records the calculation.</p>
+<h2 id="historical-snapshots">Historical snapshots</h2>
+<p>Historical images retain their bytes from release baseline <code>a369ee0dc2dcac24feaa9e2e1faf160c39d5a3de</code>. Plots are in <code>outputs/</code>; photographs and screenshots are in <code>images/</code>. The baseline revised the recruitment image; its hash below identifies that file. Acquisition and settings hashes are unavailable for these images.</p>
+<ul>
+<li>The former README heatmap shows interval S1/S2 = 0.03 and interval S1/pupil S3 = 0.85. The separately released Spearman image shows 0.55 and 0.48. Differences in methods or source snapshots prevent treating the images as interchangeable.</li>
+<li>The silhouette figure peaks at k = 2, while the cluster display uses k = 3. These historical images do not establish anxiety categories or validated participant clusters. They also do not establish that PCA preceded clustering.</li>
+<li>Timing, pupil, fixation and scoring screenshots retain their historical labels and source values. The saved descriptive results exclude unsupported clinical cutoffs and mixed units.</li>
+</ul>
+<table>
+<thead>
+<tr>
+  <th style="text-align:left">Original path</th>
+  <th style="text-align:left">Preserved file</th>
+  <th style="text-align:left">SHA256</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td style="text-align:left"><code>data/group_results/correlation_heatmap_with_values_final.png</code></td>
+  <td style="text-align:left"><a href="../outputs/legacy-spearman-heatmap.png">legacy-spearman-heatmap.png</a></td>
+  <td style="text-align:left"><code>3dd6620466f3789fa4e838d320131e085bbfb3156878b0184ce912eaf00f5230</code></td>
+</tr>
+<tr>
+  <td style="text-align:left"><code>images/Eye-Tracking calibration.png</code></td>
+  <td style="text-align:left"><a href="../images/Eye-Tracking%20calibration.png">Eye-Tracking calibration.png</a></td>
+  <td style="text-align:left"><code>175110cc7f0b3fefac96c452d1143cb24f18e59a4247242741946e287518a124</code></td>
+</tr>
+<tr>
+  <td style="text-align:left"><code>images/Eye-Tracking configuration_01.jpg</code></td>
+  <td style="text-align:left"><a href="../images/Eye-Tracking%20configuration_01.jpg">Eye-Tracking configuration_01.jpg</a></td>
+  <td style="text-align:left"><code>3f8c3cfe20165e4da7cb5586a0ff4818c9be69d56c4a372898b3fccb561b0731</code></td>
+</tr>
+<tr>
+  <td style="text-align:left"><code>images/Group Duration.png</code></td>
+  <td style="text-align:left"><a href="../outputs/Group%20Duration.png">Group Duration.png</a></td>
+  <td style="text-align:left"><code>b31e6266768fe6539eb793e6845a00ba8459cc6ce8b9fb9256f33892c3734edd</code></td>
+</tr>
+<tr>
+  <td style="text-align:left"><code>images/Group Eye.png</code></td>
+  <td style="text-align:left"><a href="../outputs/Group%20Eye.png">Group Eye.png</a></td>
+  <td style="text-align:left"><code>ebc749f826e8c7ac18c5ad4bc4c539cae5dd2382936dd7e13f66a1f0732ab1a9</code></td>
+</tr>
+<tr>
+  <td style="text-align:left"><code>images/Group SD.png</code></td>
+  <td style="text-align:left"><a href="../outputs/Group%20SD.png">Group SD.png</a></td>
+  <td style="text-align:left"><code>ab1e51352ec1776eeaa7e781114044b38b00bd1285a6a5f970298628bdfb4d8f</code></td>
+</tr>
+<tr>
+  <td style="text-align:left"><code>images/Psychometric Test dataset.png</code></td>
+  <td style="text-align:left"><a href="../images/Psychometric%20Test%20dataset.png">Psychometric Test dataset.png</a></td>
+  <td style="text-align:left"><code>ed404ec4253e4b3606bd54548ee2cc5b23c2d9faaf2a23ede7f148e9005d032c</code></td>
+</tr>
+<tr>
+  <td style="text-align:left"><code>images/Recruitment ads.jpg</code></td>
+  <td style="text-align:left"><a href="../images/Recruitment%20ads.jpg">Recruitment ads.jpg</a></td>
+  <td style="text-align:left"><code>70d49eaaa3fa4859224a453be9dc008ba036f0df737864a362e8b9276855b839</code></td>
+</tr>
+<tr>
+  <td style="text-align:left"><code>images/Standard Deviation of HRV (SDNN).png</code></td>
+  <td style="text-align:left"><a href="../outputs/Standard%20Deviation%20of%20HRV%20%28SDNN%29.png">Standard Deviation of HRV (SDNN).png</a></td>
+  <td style="text-align:left"><code>2ab6d8445a4a965b426450f78d7bc9e342ffdceec05ff6b010317b830f284f01</code></td>
+</tr>
+<tr>
+  <td style="text-align:left"><code>images/Standard Deviation of Pupil Dilation.png</code></td>
+  <td style="text-align:left"><a href="../outputs/Standard%20Deviation%20of%20Pupil%20Dilation.png">Standard Deviation of Pupil Dilation.png</a></td>
+  <td style="text-align:left"><code>3549bc8c2eb315ce32d276166273b7c8ea3450c79e95e2d908a7f837f502d65d</code></td>
+</tr>
+<tr>
+  <td style="text-align:left"><code>images/Thales Human Performance Monitoring for Data Collection.png</code></td>
+  <td style="text-align:left"><a href="../images/Thales%20Human%20Performance%20Monitoring%20for%20Data%20Collection.png">Thales Human Performance Monitoring for Data Collection.png</a></td>
+  <td style="text-align:left"><code>8a843ac588877aab005f5b4de6e44e1b536e572ffd53c5670c50eaf62b4f5583</code></td>
+</tr>
+<tr>
+  <td style="text-align:left"><code>images/avg_answer_duration.png</code></td>
+  <td style="text-align:left"><a href="../outputs/avg_answer_duration.png">avg_answer_duration.png</a></td>
+  <td style="text-align:left"><code>ac8d8da4ed24244cb84f3b99a1fa69a472f6b1d67fcd6b126e5858c209b7fc76</code></td>
+</tr>
+<tr>
+  <td style="text-align:left"><code>images/correlation_heatmap_with_values_final.png</code></td>
+  <td style="text-align:left"><a href="../outputs/correlation_heatmap_with_values_final.png">correlation_heatmap_with_values_final.png</a></td>
+  <td style="text-align:left"><code>6f155699383a671c9dc0bb1a1d6f0d146bb126a101566344666a23cf5abddc5b</code></td>
+</tr>
+<tr>
+  <td style="text-align:left"><code>images/data_collection_session.jpg</code></td>
+  <td style="text-align:left"><a href="../images/data_collection_session.jpg">data_collection_session.jpg</a></td>
+  <td style="text-align:left"><code>dfde565f00fce8c470387dee05a3524e721fd99f25f7c2baf28a51269bb54400</code></td>
+</tr>
+<tr>
+  <td style="text-align:left"><code>images/experimental_setup.jpg</code></td>
+  <td style="text-align:left"><a href="../images/experimental_setup.jpg">experimental_setup.jpg</a></td>
+  <td style="text-align:left"><code>c22de2d13f22875fc78a06ba67cbd0011f150649e5a87083a0f538c139ef7a5e</code></td>
+</tr>
+<tr>
+  <td style="text-align:left"><code>images/fixation_duration_by_session.png</code></td>
+  <td style="text-align:left"><a href="../outputs/fixation_duration_by_session.png">fixation_duration_by_session.png</a></td>
+  <td style="text-align:left"><code>00299c97bde818a7dbd64e4cacecb77ab2da2470e2a6c8fa64e9540d016a3e88</code></td>
+</tr>
+<tr>
+  <td style="text-align:left"><code>images/participant_testing.jpg</code></td>
+  <td style="text-align:left"><a href="../images/participant_testing.jpg">participant_testing.jpg</a></td>
+  <td style="text-align:left"><code>5ce9985b4b612dabc1343d95cf3e646e47b19e23780b22c1d961cabb52d9b210</code></td>
+</tr>
+<tr>
+  <td style="text-align:left"><code>images/pca_kmeans_clusters.png</code></td>
+  <td style="text-align:left"><a href="../outputs/pca_kmeans_clusters.png">pca_kmeans_clusters.png</a></td>
+  <td style="text-align:left"><code>3bbae16eac9b450b4525604717b4d925d5a000a7ae8924a306b5e72555510d80</code></td>
+</tr>
+<tr>
+  <td style="text-align:left"><code>images/scoring-results.png</code></td>
+  <td style="text-align:left"><a href="../images/scoring-results.png">scoring-results.png</a></td>
+  <td style="text-align:left"><code>5b7ec9b7d05f57d86a1b9027e62aa706ac8aa66d8981705a024a76a29d44c40d</code></td>
+</tr>
+<tr>
+  <td style="text-align:left"><code>images/setup_page_4.jpg</code></td>
+  <td style="text-align:left"><a href="../images/setup_page_4.jpg">setup_page_4.jpg</a></td>
+  <td style="text-align:left"><code>ded359afc1d271e285819453694b7a009d2a1f4834c038f14a1846f68898dfc4</code></td>
+</tr>
+<tr>
+  <td style="text-align:left"><code>images/silhouette_score.png</code></td>
+  <td style="text-align:left"><a href="../outputs/silhouette_score.png">silhouette_score.png</a></td>
+  <td style="text-align:left"><code>a6e2d6a0544ceb6a7fd55d439ea76c6516c4554035bdc38df14faac0397ede81</code></td>
+</tr>
+</tbody>
+</table>
+</main>
+  <footer>
+    <a href="../DATA_ETHICS.html">Data use and consent</a>
+    <a href="https://github.com/urmeo/multimodal-multisensor/security/advisories/new">Report a concern</a>
+  </footer>
+</body>
+</html>
