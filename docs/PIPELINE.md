@@ -33,4 +33,4 @@ See [Run the analysis](../README.md#run-the-analysis) for setup, checks and figu
 | `docs/reviews/` | Original historical PDFs |
 | `docs/images/` | Reviewed product images and their credits |
 | `docs/index.html` | Static visual report |
-| `outputs/` | Ignored local exports, including candidate events and relative-time copies |
+| `outputs/` | Local exports, including candidate events and relative-time copies |
