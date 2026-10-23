@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="1040" viewBox="0 0 1440 1040" role="img" aria-labelledby="pipeline-title pipeline-description" font-family="Arial, Helvetica, sans-serif">
+  <title id="pipeline-title">Historical analysis workflow: inputs, checks, analysis and outputs</title>
+  <desc id="pipeline-description">Historical workflow before removal of the analysis package and scripts. Available recordings and released group tables were processed separately. Saved plots and tables remain, but this checkout cannot regenerate them. Most group rows lack raw-data mappings. Clock-dependent joins were blocked by missing acquisition timezone and synchronization metadata. Interval samples are not verified unique beats; results are descriptive.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M0 0L10 5L0 10Z" fill="#50B4D0"/>
+    </marker>
+    <style>
+      .title { fill: #D5DCE0; font-size: 32px; font-weight: 700; }
+      .subtitle { fill: #A6B6BF; font-size: 22px; }
+      .stage { fill: #A6B6BF; font-size: 18px; font-weight: 700; letter-spacing: 1px; }
+      .lane { fill: #50B4D0; font-size: 18px; font-weight: 700; letter-spacing: 1px; }
+      .card { fill: #1B2327; stroke: #A6B6BF; stroke-width: 1.6; }
+      .analysis { stroke: #50B4D0; stroke-width: 2; }
+      .heading { fill: #D5DCE0; font-size: 25px; font-weight: 700; }
+      .body { fill: #A6B6BF; font-size: 22px; }
+      .note { fill: #A6B6BF; font-size: 20px; }
+      .flow { fill: none; stroke: #50B4D0; stroke-width: 2.5; marker-end: url(#arrow); }
+    </style>
+  </defs>
+
+  <rect width="1440" height="1040" fill="#14191C"/>
+  <text x="40" y="60" class="title">HISTORICAL ANALYSIS WORKFLOW</text>
+  <text x="40" y="96" class="subtitle">Analysis code has been removed. Source data and saved results remain.</text>
+  <path d="M40 122H1400" stroke="#A6B6BF" stroke-width="1.5"/>
+
+  <text x="40" y="164" class="stage">01  INPUTS</text>
+  <text x="394" y="164" class="stage">02  CHECK</text>
+  <text x="748" y="164" class="stage">03  ANALYSE</text>
+  <text x="1102" y="164" class="stage">04  OUTPUTS</text>
+
+  <text x="40" y="204" class="lane">AVAILABLE RECORDINGS</text>
+  <rect x="40" y="224" width="298" height="180" rx="8" class="card"/>
+  <text x="62" y="262" class="heading">Source data</text>
+  <text x="62" y="308" class="body">Eye + cardiac samples</text>
+  <text x="62" y="340" class="body">Answers + response times</text>
+
+  <rect x="394" y="224" width="298" height="180" rx="8" class="card analysis"/>
+  <text x="416" y="262" class="heading">Screen samples</text>
+  <text x="416" y="308" class="body">Values · time · quality</text>
+  <text x="416" y="340" class="body">Keep channels + gaps</text>
+
+  <rect x="748" y="224" width="298" height="180" rx="8" class="card analysis"/>
+  <text x="770" y="262" class="heading">Summarize samples</text>
+  <text x="770" y="308" class="body">Sample metrics</text>
+  <text x="770" y="340" class="body">Eye-event candidates</text>
+  <text x="770" y="372" class="body">Response statistics</text>
+
+  <rect x="1102" y="224" width="298" height="180" rx="8" class="card"/>
+  <text x="1124" y="262" class="heading">Recording results</text>
+  <text x="1124" y="308" class="body">Traces + distributions</text>
+  <text x="1124" y="340" class="body">Event plots + tables</text>
+  <path d="M348 314H384" class="flow"/>
+  <path d="M702 314H738" class="flow"/>
+  <path d="M1056 314H1092" class="flow"/>
+
+  <text x="40" y="456" class="lane">RELEASED GROUP TABLES</text>
+  <rect x="40" y="476" width="298" height="180" rx="8" class="card"/>
+  <text x="62" y="514" class="heading">Group summaries</text>
+  <text x="62" y="560" class="body">10 adults × 3 sessions</text>
+  <text x="62" y="592" class="body">Interval · pupil · duration</text>
+  <text x="62" y="624" class="body">Within-session SD</text>
+
+  <rect x="394" y="476" width="298" height="180" rx="8" class="card analysis"/>
+  <text x="416" y="514" class="heading">Validate tables</text>
+  <text x="416" y="560" class="body">Participant + session rows</text>
+  <text x="416" y="592" class="body">Known repeats</text>
+
+  <rect x="748" y="476" width="298" height="180" rx="8" class="card analysis"/>
+  <text x="770" y="514" class="heading">Compare sessions</text>
+  <text x="770" y="560" class="body">ICC + Spearman</text>
+  <text x="770" y="592" class="body">Paired tests</text>
+  <text x="770" y="624" class="body">P01 sensitivity</text>
+
+  <rect x="1102" y="476" width="298" height="180" rx="8" class="card"/>
+  <text x="1124" y="514" class="heading">Group results</text>
+  <text x="1124" y="560" class="body">Reliability intervals (95%)</text>
+  <text x="1124" y="592" class="body">Correlation heatmap</text>
+  <text x="1124" y="624" class="body">Sensitivity plots + tables</text>
+  <path d="M348 566H384" class="flow"/>
+  <path d="M702 566H738" class="flow"/>
+  <path d="M1056 566H1092" class="flow"/>
+
+  <text x="40" y="696" class="note">Most group rows cannot be rebuilt from the available recordings.</text>
+
+  <rect x="40" y="736" width="1360" height="148" rx="8" fill="#1B2327" stroke="#D97D70" stroke-width="1.8" stroke-dasharray="8 6"/>
+  <text x="64" y="772" fill="#D97D70" font-size="18" font-weight="700" letter-spacing="1">CLOCK-DEPENDENT WORK · METADATA UNAVAILABLE</text>
+  <text x="64" y="814" class="body">Require documented timezone + clock sync confirmed by acquisition records</text>
+  <text x="64" y="852" class="body">Question summaries · sensor joins · exploratory clusters stay skipped without both</text>
+
+  <rect x="40" y="916" width="1360" height="88" rx="8" fill="#1B2327" stroke="#46555E" stroke-width="1.5"/>
+  <text x="64" y="950" fill="#D5DCE0" font-size="23" font-weight="700">Historical checks: tests · notebooks · source hashes</text>
+  <text x="64" y="984" class="note">Saved results are descriptive; event candidates and clusters were not validated.</text>
+</svg>
